@@ -68,6 +68,10 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:16px 2
   .nav-cta{padding:6px 12px;font-size:0.74rem;}
   .lang-switch{font-size:0.7rem;}
   .lang-switch a{padding:4px 7px;}
+  section{padding:60px 0;}
+  .pricing-card{padding:32px 22px;}
+  .cta-box{padding:44px 22px;}
+  .security-panel{padding:26px 20px;}
 }
 
 /* HERO */
@@ -122,7 +126,7 @@ h1 .grad{background:linear-gradient(120deg,var(--accent-2),var(--flame1),var(--a
 
 /* SECTION HEAD */
 .section-head{text-align:center;max-width:640px;margin:0 auto 50px;}
-.section-head h2{font-family:'Space Grotesk',sans-serif;font-size:2.1rem;font-weight:700;color:#fff;margin-bottom:14px;letter-spacing:-0.01em;}
+.section-head h2{font-family:'Space Grotesk',sans-serif;font-size:clamp(1.5rem, 6vw, 2.1rem);font-weight:700;color:#fff;margin-bottom:14px;letter-spacing:-0.01em;}
 .section-head p{color:var(--text-muted);font-size:1.02rem;line-height:1.6;}
 
 /* FEATURES */
@@ -156,7 +160,7 @@ h1 .grad{background:linear-gradient(120deg,var(--accent-2),var(--flame1),var(--a
 .security{background:var(--bg-alt);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
 .security-inner{display:grid;grid-template-columns:1fr 1fr;gap:50px;align-items:center;}
 @media (max-width:860px){.security-inner{grid-template-columns:1fr;}}
-.security h2{font-family:'Space Grotesk',sans-serif;font-size:1.9rem;font-weight:700;color:#fff;margin-bottom:18px;letter-spacing:-0.01em;}
+.security h2{font-family:'Space Grotesk',sans-serif;font-size:clamp(1.4rem, 5.5vw, 1.9rem);font-weight:700;color:#fff;margin-bottom:18px;letter-spacing:-0.01em;}
 .sec-list{list-style:none;display:flex;flex-direction:column;gap:16px;}
 .sec-list li{display:flex;gap:12px;font-size:0.95rem;color:var(--text-muted);line-height:1.5;}
 .sec-list .check{flex-shrink:0;width:22px;height:22px;border-radius:7px;background:rgba(123,111,240,0.16);color:var(--accent-2);display:flex;align-items:center;justify-content:center;font-size:0.8rem;margin-top:1px;}
@@ -169,7 +173,7 @@ h1 .grad{background:linear-gradient(120deg,var(--accent-2),var(--flame1),var(--a
 .pricing-card{max-width:420px;margin:0 auto;background:var(--panel);border:1px solid var(--accent);border-radius:20px;padding:44px 40px;text-align:center;position:relative;box-shadow:0 30px 60px -30px rgba(123,111,240,0.35);transition:transform .25s ease;}
 .pricing-card:hover{transform:translateY(-4px);}
 .pricing-badge{display:inline-block;background:linear-gradient(135deg,var(--flame1),var(--flame2));color:#1a1200;font-weight:700;font-size:0.72rem;letter-spacing:0.04em;text-transform:uppercase;padding:6px 16px;border-radius:999px;margin-bottom:22px;}
-.price-amount{font-family:'Space Grotesk',sans-serif;font-size:3.2rem;font-weight:700;color:#fff;letter-spacing:-0.02em;}
+.price-amount{font-family:'Space Grotesk',sans-serif;font-size:clamp(2.2rem, 9vw, 3.2rem);font-weight:700;color:#fff;letter-spacing:-0.02em;}
 .price-amount span{font-size:1rem;font-weight:500;color:var(--text-muted);}
 .price-note{color:var(--text-muted);font-size:0.9rem;margin:8px 0 28px;}
 .price-features{list-style:none;text-align:left;display:flex;flex-direction:column;gap:12px;margin-bottom:30px;}
@@ -180,7 +184,7 @@ h1 .grad{background:linear-gradient(120deg,var(--accent-2),var(--flame1),var(--a
 .cta{text-align:center;}
 .cta-box{background:linear-gradient(135deg,#1c1730,#141020);border:1px solid var(--border);border-radius:24px;padding:64px 40px;position:relative;overflow:hidden;}
 .cta-box::before{content:"";position:absolute;top:-100px;right:-100px;width:320px;height:320px;background:radial-gradient(circle,rgba(123,111,240,0.35),transparent 70%);}
-.cta-box h2{font-family:'Space Grotesk',sans-serif;font-size:2rem;font-weight:700;color:#fff;margin-bottom:12px;position:relative;z-index:1;}
+.cta-box h2{font-family:'Space Grotesk',sans-serif;font-size:clamp(1.5rem, 6vw, 2rem);font-weight:700;color:#fff;margin-bottom:12px;position:relative;z-index:1;}
 .cta-box p{color:var(--text-muted);margin-bottom:30px;position:relative;z-index:1;}
 .cta-box .hero-actions{position:relative;z-index:1;}
 
