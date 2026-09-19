@@ -1,0 +1,14 @@
+{
+  "name": "cmsight",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Cmsight marketing site and EU Compliance Suite licensing backend",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.47.10",
+    "resend": "^4.0.1",
+    "stripe": "^17.4.0"
+  }
+}
