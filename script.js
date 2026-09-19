@@ -12,3 +12,21 @@ if ('IntersectionObserver' in window && revealEls.length) {
 } else {
   revealEls.forEach(function (el) { el.classList.add('visible'); });
 }
+
+var contactForm = document.getElementById('contact-form');
+if (contactForm) {
+  contactForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var to = contactForm.getAttribute('data-mail');
+    var name = contactForm.elements['name'].value;
+    var email = contactForm.elements['email'].value;
+    var message = contactForm.elements['message'].value;
+    var isEn = document.documentElement.lang === 'en';
+    var subject = isEn ? 'New contact from Cmsight' : 'Nouveau contact depuis Cmsight';
+    var bodyLines = isEn
+      ? ['Name: ' + name, 'Email: ' + email, '', message]
+      : ['Nom : ' + name, 'Email : ' + email, '', message];
+    var body = bodyLines.join('\n');
+    window.location.href = 'mailto:' + to + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+  });
+}

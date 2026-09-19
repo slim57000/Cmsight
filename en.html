@@ -203,9 +203,15 @@
       <div class="cta-box reveal">
         <h2>Cmsight — your website, powered by AI</h2>
         <p>Sold to web development agencies. Contact us for a demo and our terms.</p>
-        <div class="hero-actions">
-          <a href="mailto:contact@rampedigitale.fr" class="btn btn-primary btn-compact">Contact us</a>
-        </div>
+        <form class="contact-form" id="contact-form" data-mail="contact@rampedigitale.fr">
+          <div class="form-row">
+            <input type="text" name="name" placeholder="Your name" required>
+            <input type="email" name="email" placeholder="Your email" required>
+          </div>
+          <textarea name="message" rows="4" placeholder="Your message" required></textarea>
+          <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">Send message</button>
+        </form>
+        <p class="hero-note" style="margin-top:16px;">or email us directly at <a href="mailto:contact@rampedigitale.fr" style="color:var(--accent-2);">contact@rampedigitale.fr</a></p>
       </div>
     </div>
   </section>
