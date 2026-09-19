@@ -23,12 +23,37 @@
     --flame2:#f2a71b;
     --radius:16px;
   }
-  *{margin:0;padding:0;box-sizing:border-box;}
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   html,body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;scroll-behavior:smooth;}
   body{overflow-x:hidden;}
   a{color:inherit;text-decoration:none;}
   .container{max-width:1120px;margin:0 auto;padding:0 24px;}
   section{padding:90px 0;}
+
+  /* ANIMATIONS */
+  @keyframes fadeInUp{from{opacity:0;transform:translateY(26px);}to{opacity:1;transform:translateY(0);}}
+  @keyframes floatBlob{0%,100%{transform:translateX(-50%) translateY(0) scale(1);}50%{transform:translateX(-50%) translateY(22px) scale(1.06);}}
+  @keyframes floatSoft{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+  @keyframes shimmerText{to{background-position:200% center;}}
+  @keyframes softPulse{0%,100%{box-shadow:0 16px 32px -12px rgba(123,111,240,0.55);}50%{box-shadow:0 18px 42px -8px rgba(123,111,240,0.85);}}
+
+  .reveal{opacity:0;transform:translateY(28px);transition:opacity .6s cubic-bezier(.2,.7,.3,1), transform .6s cubic-bezier(.2,.7,.3,1);}
+  .reveal.visible{opacity:1;transform:translateY(0);}
+  .feature-grid .feature-card:nth-child(1){transition-delay:.03s;}
+  .feature-grid .feature-card:nth-child(2){transition-delay:.11s;}
+  .feature-grid .feature-card:nth-child(3){transition-delay:.19s;}
+  .feature-grid .feature-card:nth-child(4){transition-delay:.27s;}
+  .steps .step:nth-child(1){transition-delay:.03s;}
+  .steps .step:nth-child(2){transition-delay:.11s;}
+  .steps .step:nth-child(3){transition-delay:.19s;}
+  .steps .step:nth-child(4){transition-delay:.27s;}
+  .security-inner > *:nth-child(1){transition-delay:0s;}
+  .security-inner > *:nth-child(2){transition-delay:.14s;}
+
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation:none !important;transition:none !important;scroll-behavior:auto !important;}
+    .reveal{opacity:1;transform:none;}
+  }
 
   /* NAV */
   header{position:sticky;top:0;z-index:50;background:rgba(10,10,19,0.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);}
@@ -48,23 +73,32 @@
     content:"";position:absolute;top:-120px;left:50%;transform:translateX(-50%);
     width:900px;height:500px;background:radial-gradient(circle, rgba(123,111,240,0.25), transparent 70%);
     pointer-events:none;z-index:0;
+    animation:floatBlob 9s ease-in-out infinite;
   }
   .hero-inner{position:relative;z-index:1;}
+  .hero-inner > *{opacity:0;animation:fadeInUp .7s cubic-bezier(.2,.7,.3,1) forwards;}
+  .hero-inner > .eyebrow{animation-delay:.05s;}
+  .hero-inner > h1{animation-delay:.15s;}
+  .hero-inner > p.lead{animation-delay:.25s;}
+  .hero-inner > .hero-actions{animation-delay:.35s;}
+  .hero-inner > .hero-note{animation-delay:.42s;}
+  .hero-inner > .mockup-wrap{animation-delay:.5s;}
   .eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--border);color:var(--accent-2);font-size:0.8rem;font-weight:600;padding:7px 16px;border-radius:999px;margin-bottom:26px;}
   h1{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:3.4rem;line-height:1.12;letter-spacing:-0.01em;max-width:780px;margin:0 auto 22px;color:#fff;}
-  h1 .grad{background:linear-gradient(120deg,var(--accent-2),var(--flame1));-webkit-background-clip:text;background-clip:text;color:transparent;}
+  h1 .grad{background:linear-gradient(120deg,var(--accent-2),var(--flame1),var(--accent-2));background-size:200% auto;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shimmerText 6s linear infinite;}
   .hero p.lead{max-width:600px;margin:0 auto 36px;color:var(--text-muted);font-size:1.12rem;line-height:1.6;}
   .hero-actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:16px;}
   .btn{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;border-radius:12px;font-weight:600;font-size:0.98rem;transition:transform .18s ease, box-shadow .18s ease;}
-  .btn-primary{background:var(--accent);color:#fff;box-shadow:0 16px 32px -12px rgba(123,111,240,0.55);}
+  .btn-primary{background:var(--accent);color:#fff;box-shadow:0 16px 32px -12px rgba(123,111,240,0.55);animation:softPulse 3.2s ease-in-out infinite;}
   .btn-primary:hover{transform:translateY(-2px);box-shadow:0 20px 40px -12px rgba(123,111,240,0.7);}
+  .btn:active{transform:scale(0.95);}
   .btn-ghost{background:var(--panel);border:1px solid var(--border);color:var(--text);}
   .btn-ghost:hover{border-color:var(--accent);}
   .hero-note{color:var(--text-muted);font-size:0.85rem;}
 
   /* MOCKUP */
   .mockup-wrap{max-width:980px;margin:60px auto 0;position:relative;z-index:1;}
-  .mockup{background:var(--panel);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:0 40px 80px -30px rgba(0,0,0,0.6);}
+  .mockup{background:var(--panel);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:0 40px 80px -30px rgba(0,0,0,0.6);animation:floatSoft 5s ease-in-out 1.2s infinite;}
   .mockup-bar{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--panel-2);}
   .mockup-bar .dot{width:10px;height:10px;border-radius:50%;}
   .mockup-bar .dot:nth-child(1){background:#4b4b63;}
@@ -92,20 +126,25 @@
   .feature-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;}
   @media (max-width:940px){.feature-grid{grid-template-columns:repeat(2,1fr);}}
   @media (max-width:560px){.feature-grid{grid-template-columns:1fr;}}
-  .feature-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:26px 22px;transition:border-color .2s, transform .2s;}
-  .feature-card:hover{border-color:var(--accent);transform:translateY(-4px);}
+  .feature-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:26px 22px;transition:border-color .2s, transform .2s, box-shadow .2s;}
+  .feature-card:hover{border-color:var(--accent);transform:translateY(-4px);box-shadow:0 16px 32px -18px rgba(123,111,240,0.5);}
+  .feature-card:active{transform:translateY(-1px) scale(0.98);}
   .feature-card .fico{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;margin-bottom:16px;background:rgba(123,111,240,0.14);}
   .feature-card h3{font-size:1.03rem;font-weight:600;color:#fff;margin-bottom:8px;}
   .feature-card p{font-size:0.88rem;color:var(--text-muted);line-height:1.55;}
   .cms-row{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin-top:40px;}
-  .cms-pill{background:var(--panel);border:1px solid var(--border);color:var(--text-muted);font-size:0.85rem;padding:8px 18px;border-radius:999px;}
+  .cms-pill{background:var(--panel);border:1px solid var(--border);color:var(--text-muted);font-size:0.85rem;padding:8px 18px;border-radius:999px;transition:border-color .2s, transform .2s, color .2s;}
+  .cms-pill:active{transform:scale(0.94);border-color:var(--accent);color:var(--text);}
 
   /* STEPS */
   .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;}
   @media (max-width:860px){.steps{grid-template-columns:repeat(2,1fr);}}
   @media (max-width:560px){.steps{grid-template-columns:1fr;}}
-  .step{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:26px 22px;position:relative;}
-  .step .num{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-family:'Space Grotesk',sans-serif;margin-bottom:16px;}
+  .step{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:26px 22px;position:relative;transition:border-color .2s, transform .2s;}
+  .step:hover{border-color:var(--accent);transform:translateY(-4px);}
+  .step:active{transform:translateY(-1px) scale(0.98);}
+  .step .num{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-family:'Space Grotesk',sans-serif;margin-bottom:16px;transition:transform .2s;}
+  .step:hover .num{transform:scale(1.1) rotate(-6deg);}
   .step h3{font-size:1.02rem;font-weight:600;color:#fff;margin-bottom:8px;}
   .step p{font-size:0.87rem;color:var(--text-muted);line-height:1.55;}
 
@@ -123,7 +162,8 @@
   .security-panel strong{color:#fff;}
 
   /* PRICING */
-  .pricing-card{max-width:420px;margin:0 auto;background:var(--panel);border:1px solid var(--accent);border-radius:20px;padding:44px 40px;text-align:center;position:relative;box-shadow:0 30px 60px -30px rgba(123,111,240,0.35);}
+  .pricing-card{max-width:420px;margin:0 auto;background:var(--panel);border:1px solid var(--accent);border-radius:20px;padding:44px 40px;text-align:center;position:relative;box-shadow:0 30px 60px -30px rgba(123,111,240,0.35);transition:transform .25s ease;}
+  .pricing-card:hover{transform:translateY(-4px);}
   .pricing-badge{display:inline-block;background:linear-gradient(135deg,var(--flame1),var(--flame2));color:#1a1200;font-weight:700;font-size:0.72rem;letter-spacing:0.04em;text-transform:uppercase;padding:6px 16px;border-radius:999px;margin-bottom:22px;}
   .price-amount{font-family:'Space Grotesk',sans-serif;font-size:3.2rem;font-weight:700;color:#fff;letter-spacing:-0.02em;}
   .price-amount span{font-size:1rem;font-weight:500;color:var(--text-muted);}
@@ -209,33 +249,33 @@
 
   <section class="features" id="features">
     <div class="container">
-      <div class="section-head">
+      <div class="section-head reveal">
         <h2>Ce que Cmsight fait pour vous</h2>
         <p>Un assistant qui connaît vos outils, pas un chatbot générique.</p>
       </div>
       <div class="feature-grid">
-        <div class="feature-card">
+        <div class="feature-card reveal">
           <div class="fico">🤖</div>
           <h3>Assistant IA</h3>
           <p>Décrivez la modification en français — l'IA écrit le code exact pour votre CMS.</p>
         </div>
-        <div class="feature-card">
+        <div class="feature-card reveal">
           <div class="fico">🛡</div>
           <h3>Aperçu &amp; Backup</h3>
           <p>Comparez avant/après avant d'appliquer. Sauvegarde de chaque fichier modifié, restauration à tout moment.</p>
         </div>
-        <div class="feature-card">
+        <div class="feature-card reveal">
           <div class="fico">🔌</div>
           <h3>Local, FTP, SFTP</h3>
           <p>Connexion en 2 minutes vers un dossier local, un hébergement FTP ou un serveur SFTP sécurisé.</p>
         </div>
-        <div class="feature-card">
+        <div class="feature-card reveal">
           <div class="fico">🔐</div>
           <h3>Sécurité</h3>
           <p>Mot de passe au lancement, tout reste sur votre machine. Pas de cloud, pas d'abonnement caché.</p>
         </div>
       </div>
-      <div class="cms-row">
+      <div class="cms-row reveal">
         <span class="cms-pill">WordPress</span>
         <span class="cms-pill">WooCommerce</span>
         <span class="cms-pill">PrestaShop</span>
@@ -247,27 +287,27 @@
 
   <section id="how">
     <div class="container">
-      <div class="section-head">
+      <div class="section-head reveal">
         <h2>Simple comme 1, 2, 3, 4</h2>
         <p>Aucune connaissance technique requise.</p>
       </div>
       <div class="steps">
-        <div class="step">
+        <div class="step reveal">
           <div class="num">1</div>
           <h3>Configurez</h3>
           <p>Connectez votre site : dossier local, FTP ou SFTP. Le CMS est détecté automatiquement.</p>
         </div>
-        <div class="step">
+        <div class="step reveal">
           <div class="num">2</div>
           <h3>Demandez</h3>
           <p>Décrivez ce que vous voulez changer dans le chat.</p>
         </div>
-        <div class="step">
+        <div class="step reveal">
           <div class="num">3</div>
           <h3>Vérifiez</h3>
           <p>L'IA propose les fichiers modifiés. Vous voyez le diff avant/après.</p>
         </div>
-        <div class="step">
+        <div class="step reveal">
           <div class="num">4</div>
           <h3>Appliquez</h3>
           <p>Un clic : les fichiers sont modifiés et sauvegardés automatiquement.</p>
@@ -278,7 +318,7 @@
 
   <section class="security" id="security">
     <div class="container security-inner">
-      <div>
+      <div class="reveal">
         <h2>Vos sites, protégés</h2>
         <ul class="sec-list">
           <li><span class="check">✓</span> Sauvegarde automatique de chaque fichier avant modification</li>
@@ -287,7 +327,7 @@
           <li><span class="check">✓</span> Aperçu des modifications avant application, zéro mauvaise surprise</li>
         </ul>
       </div>
-      <div class="security-panel">
+      <div class="security-panel reveal">
         <div class="lock">🔐</div>
         <p><strong>Zéro cloud.</strong><br>Tout reste sur votre machine — vos sites clients, vos clés API, vos identifiants de connexion ne quittent jamais votre PC.</p>
       </div>
@@ -296,11 +336,11 @@
 
   <section id="pricing">
     <div class="container">
-      <div class="section-head">
+      <div class="section-head reveal">
         <h2>Un prix unique, pas d'abonnement</h2>
         <p>Vous achetez une fois, vous gardez l'outil. Sans engagement caché.</p>
       </div>
-      <div class="pricing-card">
+      <div class="pricing-card reveal">
         <span class="pricing-badge">Offre de lancement</span>
         <div class="price-amount">79€<span> / licence à vie</span></div>
         <p class="price-note">Paiement unique — aucun renouvellement, aucun abonnement</p>
@@ -317,7 +357,7 @@
 
   <section class="cta" id="cta">
     <div class="container">
-      <div class="cta-box">
+      <div class="cta-box reveal">
         <h2>Cmsight — votre site, piloté par l'IA</h2>
         <p>En vente aux agences de développement web. Contactez-nous pour une démonstration et nos conditions.</p>
         <div class="hero-actions">
@@ -331,6 +371,23 @@
 <footer>
   Créé par <a href="https://www.rampedigitale.fr">Rampe Digitale</a> · rampedigitale.fr
 </footer>
+
+<script>
+  var revealEls = document.querySelectorAll('.reveal');
+  if ('IntersectionObserver' in window && revealEls.length) {
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+    revealEls.forEach(function (el) { observer.observe(el); });
+  } else {
+    revealEls.forEach(function (el) { el.classList.add('visible'); });
+  }
+</script>
 
 </body>
 </html>
