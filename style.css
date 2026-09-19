@@ -62,19 +62,12 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:16px 2
 .nav-cta:hover{background:var(--accent-2);}
 @media (max-width:720px){.nav-links{display:none;}}
 @media (max-width:480px){
-  nav{flex-wrap:wrap;justify-content:center;row-gap:10px;}
+  nav{flex-wrap:wrap;justify-content:center;row-gap:6px;padding-top:8px;padding-bottom:8px;}
   .nav-right{width:100%;justify-content:center;}
   .logo{font-size:1.05rem;}
   .nav-cta{padding:6px 12px;font-size:0.74rem;}
   .lang-switch{font-size:0.7rem;}
   .lang-switch a{padding:4px 7px;}
-  section{padding:60px 0;}
-  .pricing-card{padding:32px 22px;}
-  .cta-box{padding:44px 22px;}
-  .security-panel{padding:26px 20px;}
-  .hero{padding:0 0 50px;}
-  .eyebrow{margin-bottom:14px;}
-  nav{padding-top:8px;padding-bottom:8px;row-gap:6px;}
 }
 
 /* HERO */
@@ -209,3 +202,13 @@ h1 .grad{background:linear-gradient(120deg,var(--accent-2),var(--flame1),var(--a
 
 footer{border-top:1px solid var(--border);padding:36px 0;text-align:center;color:var(--text-muted);font-size:0.85rem;}
 footer a{color:var(--accent-2);}
+
+/* MOBILE OVERRIDES (kept last so they win the cascade over same-specificity base rules above) */
+@media (max-width:480px){
+  section{padding:60px 0;}
+  .hero{padding:0 0 50px;}
+  .eyebrow{margin-bottom:14px;}
+  .pricing-card{padding:32px 22px;}
+  .cta-box{padding:44px 22px;}
+  .security-panel{padding:26px 20px;}
+}
