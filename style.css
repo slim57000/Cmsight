@@ -64,6 +64,10 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:16px 2
 @media (max-width:480px){
   nav{flex-wrap:wrap;justify-content:center;row-gap:10px;}
   .nav-right{width:100%;justify-content:center;}
+  .logo{font-size:1.05rem;}
+  .nav-cta{padding:6px 12px;font-size:0.74rem;}
+  .lang-switch{font-size:0.7rem;}
+  .lang-switch a{padding:4px 7px;}
 }
 
 /* HERO */
@@ -83,7 +87,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:16px 2
 .hero-inner > .hero-note{animation-delay:.42s;}
 .hero-inner > .mockup-wrap{animation-delay:.5s;}
 .eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--border);color:var(--accent-2);font-size:0.8rem;font-weight:600;padding:7px 16px;border-radius:999px;margin-bottom:26px;}
-h1{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:clamp(2rem, 8vw, 3.4rem);line-height:1.15;letter-spacing:-0.01em;max-width:780px;margin:0 auto 22px;color:#fff;overflow-wrap:break-word;}
+h1{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:clamp(1.75rem, 7vw, 3.4rem);line-height:1.18;letter-spacing:-0.01em;max-width:780px;margin:0 auto 22px;color:#fff;overflow-wrap:break-word;}
 h1 .grad{background:linear-gradient(120deg,var(--accent-2),var(--flame1),var(--accent-2));background-size:200% auto;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shimmerText 6s linear infinite;}
 .hero p.lead{max-width:600px;margin:0 auto 36px;color:var(--text-muted);font-size:1.12rem;line-height:1.6;}
 .hero-actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:16px;}
