@@ -203,6 +203,13 @@ h1 .grad{background:linear-gradient(120deg,var(--accent-2),var(--flame1),var(--a
 footer{border-top:1px solid var(--border);padding:36px 0;text-align:center;color:var(--text-muted);font-size:0.85rem;}
 footer a{color:var(--accent-2);}
 
+/* SCROLL UI */
+.scroll-progress{position:fixed;top:0;left:0;height:3px;width:0%;background:linear-gradient(90deg,var(--accent),var(--flame1));z-index:100;transition:width .1s linear;}
+.back-to-top{position:fixed;bottom:24px;right:24px;width:46px;height:46px;border-radius:50%;background:var(--accent);color:#fff;border:none;display:flex;align-items:center;justify-content:center;font-size:1.2rem;line-height:1;cursor:pointer;box-shadow:0 10px 24px -8px rgba(123,111,240,0.6);opacity:0;pointer-events:none;transform:translateY(12px);transition:opacity .25s ease, transform .25s ease, background .2s;z-index:60;}
+.back-to-top.visible{opacity:1;pointer-events:auto;transform:translateY(0);}
+.back-to-top:hover{background:var(--accent-2);}
+.back-to-top:active{transform:scale(0.92);}
+
 /* MOBILE OVERRIDES (kept last so they win the cascade over same-specificity base rules above) */
 @media (max-width:480px){
   section{padding:60px 0;}
@@ -211,4 +218,5 @@ footer a{color:var(--accent-2);}
   .pricing-card{padding:32px 22px;}
   .cta-box{padding:44px 22px;}
   .security-panel{padding:26px 20px;}
+  .back-to-top{bottom:16px;right:16px;width:42px;height:42px;font-size:1.05rem;}
 }

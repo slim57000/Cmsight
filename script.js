@@ -13,6 +13,32 @@ if ('IntersectionObserver' in window && revealEls.length) {
   revealEls.forEach(function (el) { el.classList.add('visible'); });
 }
 
+var scrollProgress = document.getElementById('scroll-progress');
+var backToTop = document.getElementById('back-to-top');
+
+function updateScrollUI() {
+  var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+  var docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  var pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+  if (scrollProgress) scrollProgress.style.width = pct + '%';
+  if (backToTop) {
+    if (scrollTop > 400) backToTop.classList.add('visible');
+    else backToTop.classList.remove('visible');
+  }
+}
+
+if (scrollProgress || backToTop) {
+  window.addEventListener('scroll', updateScrollUI, { passive: true });
+  window.addEventListener('resize', updateScrollUI);
+  updateScrollUI();
+}
+
+if (backToTop) {
+  backToTop.addEventListener('click', function () {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+}
+
 var contactForm = document.getElementById('contact-form');
 if (contactForm) {
   contactForm.addEventListener('submit', function (e) {
