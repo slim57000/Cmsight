@@ -50,7 +50,16 @@ STRIPE_WEBHOOK_SECRET
 STRIPE_PRICE_ID=price_1UHNgV2cZZwb2lytBbn1U8vk
 RESEND_API_KEY
 LICENSE_FROM_EMAIL
+CHECKOUT_SUCCESS_URL=https://cmsight.vercel.app/checkout/success
+CHECKOUT_CANCEL_URL=https://cmsight.vercel.app/checkout/cancel
 ```
+
+`CHECKOUT_SUCCESS_URL` / `CHECKOUT_CANCEL_URL` are optional — if unset,
+`/api/checkout` falls back to redirecting to `eu-compliance-suite.html`
+on the request's own origin. The dedicated pages
+(`checkout/success/index.html`, `checkout/cancel/index.html`) give a
+cleaner post-payment experience and are what these two variables point
+to by default.
 
 `.env.example` lists the same variables with no values, for local
 reference — never commit a real `.env`.

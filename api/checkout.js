@@ -20,13 +20,17 @@ module.exports = async function handler(req, res) {
     const proto = req.headers['x-forwarded-proto'] || 'https';
     const origin = req.headers.origin || `${proto}://${req.headers.host}`;
 
+    const successBase = process.env.CHECKOUT_SUCCESS_URL || `${origin}/eu-compliance-suite.html`;
+    const cancelUrl = process.env.CHECKOUT_CANCEL_URL || `${origin}/eu-compliance-suite.html`;
+    const successUrl = `${successBase}${successBase.includes('?') ? '&' : '?'}session_id={CHECKOUT_SESSION_ID}`;
+
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       line_items: [{ price: priceId, quantity: 1 }],
       // No customer_email is set here, so Stripe Checkout itself collects
       // and verifies the buyer's email address.
-      success_url: `${origin}/eu-compliance-suite.html?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/eu-compliance-suite.html?checkout=cancelled`,
+      success_url: successUrl,
+      cancel_url: cancelUrl,
       allow_promotion_codes: true,
     });
 

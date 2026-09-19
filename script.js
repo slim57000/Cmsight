@@ -64,18 +64,6 @@ if (buyButtons.length) {
   });
 }
 
-var checkoutBanner = document.getElementById('checkout-banner');
-if (checkoutBanner) {
-  var checkoutStatus = new URLSearchParams(window.location.search).get('checkout');
-  if (checkoutStatus === 'success') {
-    checkoutBanner.textContent = 'Paiement réussi ! Votre clé de licence vient de vous être envoyée par email.';
-    checkoutBanner.classList.add('shown', 'success');
-  } else if (checkoutStatus === 'cancelled') {
-    checkoutBanner.textContent = 'Paiement annulé. Vous pouvez réessayer quand vous le souhaitez.';
-    checkoutBanner.classList.add('shown', 'cancelled');
-  }
-}
-
 var contactForm = document.getElementById('contact-form');
 if (contactForm) {
   contactForm.addEventListener('submit', function (e) {
