@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cmsight — Modifiez votre site web avec l'IA</title>
+<meta name="description" content="Cmsight : un assistant IA qui modifie votre site WordPress, WooCommerce, PrestaShop, Joomla ou Drupal, sans toucher au code. Local, sécurisé, sans abonnement caché.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0a13;
+    --bg-alt:#0d0d19;
+    --panel:#141420;
+    --panel-2:#181826;
+    --border:#26263a;
+    --text:#e9e7f2;
+    --text-muted:#8d89a8;
+    --accent:#7b6ff0;
+    --accent-2:#a89bff;
+    --flame1:#ffc861;
+    --flame2:#f2a71b;
+    --radius:16px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;scroll-behavior:smooth;}
+  body{overflow-x:hidden;}
+  a{color:inherit;text-decoration:none;}
+  .container{max-width:1120px;margin:0 auto;padding:0 24px;}
+  section{padding:90px 0;}
+
+  /* NAV */
+  header{position:sticky;top:0;z-index:50;background:rgba(10,10,19,0.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;max-width:1120px;margin:0 auto;}
+  .logo{display:flex;align-items:center;gap:10px;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.25rem;color:#fff;}
+  .logo-badge{width:34px;height:34px;border-radius:9px;background:linear-gradient(145deg,#2a2140,#1a1530);display:flex;align-items:center;justify-content:center;font-size:1.1rem;box-shadow:inset 0 0 0 1px rgba(255,255,255,0.06);}
+  .logo .dot{color:var(--accent-2);}
+  .nav-links{display:flex;gap:32px;font-size:0.92rem;color:var(--text-muted);}
+  .nav-links a:hover{color:var(--text);}
+  .nav-cta{background:var(--accent);color:#fff;padding:10px 20px;border-radius:10px;font-weight:600;font-size:0.9rem;transition:background .2s;}
+  .nav-cta:hover{background:var(--accent-2);}
+  @media (max-width:720px){.nav-links{display:none;}}
+
+  /* HERO */
+  .hero{padding:110px 0 70px;text-align:center;position:relative;}
+  .hero::before{
+    content:"";position:absolute;top:-120px;left:50%;transform:translateX(-50%);
+    width:900px;height:500px;background:radial-gradient(circle, rgba(123,111,240,0.25), transparent 70%);
+    pointer-events:none;z-index:0;
+  }
+  .hero-inner{position:relative;z-index:1;}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--border);color:var(--accent-2);font-size:0.8rem;font-weight:600;padding:7px 16px;border-radius:999px;margin-bottom:26px;}
+  h1{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:3.4rem;line-height:1.12;letter-spacing:-0.01em;max-width:780px;margin:0 auto 22px;color:#fff;}
+  h1 .grad{background:linear-gradient(120deg,var(--accent-2),var(--flame1));-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .hero p.lead{max-width:600px;margin:0 auto 36px;color:var(--text-muted);font-size:1.12rem;line-height:1.6;}
+  .hero-actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:16px;}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;border-radius:12px;font-weight:600;font-size:0.98rem;transition:transform .18s ease, box-shadow .18s ease;}
+  .btn-primary{background:var(--accent);color:#fff;box-shadow:0 16px 32px -12px rgba(123,111,240,0.55);}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 20px 40px -12px rgba(123,111,240,0.7);}
+  .btn-ghost{background:var(--panel);border:1px solid var(--border);color:var(--text);}
+  .btn-ghost:hover{border-color:var(--accent);}
+  .hero-note{color:var(--text-muted);font-size:0.85rem;}
+
+  /* MOCKUP */
+  .mockup-wrap{max-width:980px;margin:60px auto 0;position:relative;z-index:1;}
+  .mockup{background:var(--panel);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:0 40px 80px -30px rgba(0,0,0,0.6);}
+  .mockup-bar{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--panel-2);}
+  .mockup-bar .dot{width:10px;height:10px;border-radius:50%;}
+  .mockup-bar .dot:nth-child(1){background:#4b4b63;}
+  .mockup-bar .dot:nth-child(2){background:#4b4b63;}
+  .mockup-bar .dot:nth-child(3){background:#e05252;}
+  .mockup-bar .path{margin-left:14px;color:var(--text-muted);font-size:0.78rem;font-family:monospace;}
+  .mockup-body{display:grid;grid-template-columns:200px 1fr 260px;min-height:340px;}
+  .mockup-files{border-right:1px solid var(--border);padding:16px 14px;font-size:0.78rem;color:var(--text-muted);}
+  .mockup-files .lbl{font-size:0.68rem;letter-spacing:0.08em;color:#5f5c78;margin-bottom:10px;font-weight:700;}
+  .mockup-files li{list-style:none;padding:4px 0;}
+  .mockup-main{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;color:var(--text-muted);font-size:0.85rem;}
+  .mockup-main .folder{font-size:2rem;opacity:.6;}
+  .mockup-ai{border-left:1px solid var(--border);padding:16px 14px;font-size:0.78rem;color:var(--text-muted);display:flex;flex-direction:column;}
+  .mockup-ai .lbl{font-size:0.68rem;letter-spacing:0.08em;color:#5f5c78;margin-bottom:14px;font-weight:700;}
+  .mockup-ai .msg{background:var(--panel-2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-top:auto;color:#6f6c8a;}
+  @media (max-width:800px){.mockup-body{grid-template-columns:1fr;min-height:auto;}.mockup-files,.mockup-ai{display:none;}.mockup-main{padding:50px 0;}}
+
+  /* SECTION HEAD */
+  .section-head{text-align:center;max-width:640px;margin:0 auto 50px;}
+  .section-head h2{font-family:'Space Grotesk',sans-serif;font-size:2.1rem;font-weight:700;color:#fff;margin-bottom:14px;letter-spacing:-0.01em;}
+  .section-head p{color:var(--text-muted);font-size:1.02rem;line-height:1.6;}
+
+  /* FEATURES */
+  .features{background:var(--bg-alt);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+  .feature-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;}
+  @media (max-width:940px){.feature-grid{grid-template-columns:repeat(2,1fr);}}
+  @media (max-width:560px){.feature-grid{grid-template-columns:1fr;}}
+  .feature-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:26px 22px;transition:border-color .2s, transform .2s;}
+  .feature-card:hover{border-color:var(--accent);transform:translateY(-4px);}
+  .feature-card .fico{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;margin-bottom:16px;background:rgba(123,111,240,0.14);}
+  .feature-card h3{font-size:1.03rem;font-weight:600;color:#fff;margin-bottom:8px;}
+  .feature-card p{font-size:0.88rem;color:var(--text-muted);line-height:1.55;}
+  .cms-row{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin-top:40px;}
+  .cms-pill{background:var(--panel);border:1px solid var(--border);color:var(--text-muted);font-size:0.85rem;padding:8px 18px;border-radius:999px;}
+
+  /* STEPS */
+  .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;}
+  @media (max-width:860px){.steps{grid-template-columns:repeat(2,1fr);}}
+  @media (max-width:560px){.steps{grid-template-columns:1fr;}}
+  .step{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:26px 22px;position:relative;}
+  .step .num{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-family:'Space Grotesk',sans-serif;margin-bottom:16px;}
+  .step h3{font-size:1.02rem;font-weight:600;color:#fff;margin-bottom:8px;}
+  .step p{font-size:0.87rem;color:var(--text-muted);line-height:1.55;}
+
+  /* SECURITY */
+  .security{background:var(--bg-alt);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+  .security-inner{display:grid;grid-template-columns:1fr 1fr;gap:50px;align-items:center;}
+  @media (max-width:860px){.security-inner{grid-template-columns:1fr;}}
+  .security h2{font-family:'Space Grotesk',sans-serif;font-size:1.9rem;font-weight:700;color:#fff;margin-bottom:18px;letter-spacing:-0.01em;}
+  .sec-list{list-style:none;display:flex;flex-direction:column;gap:16px;}
+  .sec-list li{display:flex;gap:12px;font-size:0.95rem;color:var(--text-muted);line-height:1.5;}
+  .sec-list .check{flex-shrink:0;width:22px;height:22px;border-radius:7px;background:rgba(123,111,240,0.16);color:var(--accent-2);display:flex;align-items:center;justify-content:center;font-size:0.8rem;margin-top:1px;}
+  .security-panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:36px;text-align:center;}
+  .security-panel .lock{font-size:2.4rem;margin-bottom:14px;}
+  .security-panel p{color:var(--text-muted);font-size:0.9rem;line-height:1.6;}
+  .security-panel strong{color:#fff;}
+
+  /* PRICING */
+  .pricing-card{max-width:420px;margin:0 auto;background:var(--panel);border:1px solid var(--accent);border-radius:20px;padding:44px 40px;text-align:center;position:relative;box-shadow:0 30px 60px -30px rgba(123,111,240,0.35);}
+  .pricing-badge{display:inline-block;background:linear-gradient(135deg,var(--flame1),var(--flame2));color:#1a1200;font-weight:700;font-size:0.72rem;letter-spacing:0.04em;text-transform:uppercase;padding:6px 16px;border-radius:999px;margin-bottom:22px;}
+  .price-amount{font-family:'Space Grotesk',sans-serif;font-size:3.2rem;font-weight:700;color:#fff;letter-spacing:-0.02em;}
+  .price-amount span{font-size:1rem;font-weight:500;color:var(--text-muted);}
+  .price-note{color:var(--text-muted);font-size:0.9rem;margin:8px 0 28px;}
+  .price-features{list-style:none;text-align:left;display:flex;flex-direction:column;gap:12px;margin-bottom:30px;}
+  .price-features li{display:flex;gap:10px;font-size:0.92rem;color:var(--text);}
+  .price-features .check{flex-shrink:0;width:20px;height:20px;border-radius:6px;background:rgba(123,111,240,0.16);color:var(--accent-2);display:flex;align-items:center;justify-content:center;font-size:0.72rem;margin-top:2px;}
+
+  /* CTA */
+  .cta{text-align:center;}
+  .cta-box{background:linear-gradient(135deg,#1c1730,#141020);border:1px solid var(--border);border-radius:24px;padding:64px 40px;position:relative;overflow:hidden;}
+  .cta-box::before{content:"";position:absolute;top:-100px;right:-100px;width:320px;height:320px;background:radial-gradient(circle,rgba(123,111,240,0.35),transparent 70%);}
+  .cta-box h2{font-family:'Space Grotesk',sans-serif;font-size:2rem;font-weight:700;color:#fff;margin-bottom:12px;position:relative;z-index:1;}
+  .cta-box p{color:var(--text-muted);margin-bottom:30px;position:relative;z-index:1;}
+  .cta-box .hero-actions{position:relative;z-index:1;}
+
+  footer{border-top:1px solid var(--border);padding:36px 0;text-align:center;color:var(--text-muted);font-size:0.85rem;}
+  footer a{color:var(--accent-2);}
+</style>
+</head>
+<body>
+
+<header>
+  <nav>
+    <a href="#" class="logo">
+      <span class="logo-badge">🔥</span>
+      Cmsight<span class="dot">.</span>
+    </a>
+    <div class="nav-links">
+      <a href="#features">Fonctionnalités</a>
+      <a href="#how">Comment ça marche</a>
+      <a href="#security">Sécurité</a>
+      <a href="#pricing">Prix</a>
+    </div>
+    <a href="#cta" class="nav-cta">Nous contacter</a>
+  </nav>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="container hero-inner">
+      <span class="eyebrow">✨ Pour les agences web &amp; freelances</span>
+      <h1>Modifiez votre site web <span class="grad">avec l'intelligence artificielle</span>, sans toucher au code</h1>
+      <p class="lead">Un assistant IA qui connaît WordPress, WooCommerce, PrestaShop, Joomla et Drupal. Décrivez la modification en français — l'IA écrit le code exact pour votre CMS.</p>
+      <div class="hero-actions">
+        <a href="#cta" class="btn btn-primary">Demander une démonstration</a>
+        <a href="#how" class="btn btn-ghost">Voir comment ça marche</a>
+      </div>
+      <p class="hero-note">Local, FTP ou SFTP · Aucune donnée envoyée dans le cloud</p>
+
+      <div class="mockup-wrap">
+        <div class="mockup">
+          <div class="mockup-bar">
+            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+            <span class="path">Cmsight — C:\Users\Flo\Local Sites\test\app\public</span>
+          </div>
+          <div class="mockup-body">
+            <div class="mockup-files">
+              <div class="lbl">FICHIERS</div>
+              <ul>
+                <li>· wp-admin</li>
+                <li>· wp-content</li>
+                <li>· wp-includes</li>
+                <li>· wp-config.php</li>
+                <li>· index.php</li>
+                <li>· .htaccess</li>
+              </ul>
+            </div>
+            <div class="mockup-main">
+              <div class="folder">📁</div>
+              <div>Ouvrez un fichier pour commencer</div>
+              <div>ou utilisez l'assistant IA</div>
+            </div>
+            <div class="mockup-ai">
+              <div class="lbl">ASSISTANT IA</div>
+              <div class="msg">Posez une question sur votre site.<br>Ex « Ajoute un bouton contact sur la page d'accueil »</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="features" id="features">
+    <div class="container">
+      <div class="section-head">
+        <h2>Ce que Cmsight fait pour vous</h2>
+        <p>Un assistant qui connaît vos outils, pas un chatbot générique.</p>
+      </div>
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="fico">🤖</div>
+          <h3>Assistant IA</h3>
+          <p>Décrivez la modification en français — l'IA écrit le code exact pour votre CMS.</p>
+        </div>
+        <div class="feature-card">
+          <div class="fico">🛡</div>
+          <h3>Aperçu &amp; Backup</h3>
+          <p>Comparez avant/après avant d'appliquer. Sauvegarde de chaque fichier modifié, restauration à tout moment.</p>
+        </div>
+        <div class="feature-card">
+          <div class="fico">🔌</div>
+          <h3>Local, FTP, SFTP</h3>
+          <p>Connexion en 2 minutes vers un dossier local, un hébergement FTP ou un serveur SFTP sécurisé.</p>
+        </div>
+        <div class="feature-card">
+          <div class="fico">🔐</div>
+          <h3>Sécurité</h3>
+          <p>Mot de passe au lancement, tout reste sur votre machine. Pas de cloud, pas d'abonnement caché.</p>
+        </div>
+      </div>
+      <div class="cms-row">
+        <span class="cms-pill">WordPress</span>
+        <span class="cms-pill">WooCommerce</span>
+        <span class="cms-pill">PrestaShop</span>
+        <span class="cms-pill">Joomla</span>
+        <span class="cms-pill">Drupal</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="container">
+      <div class="section-head">
+        <h2>Simple comme 1, 2, 3, 4</h2>
+        <p>Aucune connaissance technique requise.</p>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="num">1</div>
+          <h3>Configurez</h3>
+          <p>Connectez votre site : dossier local, FTP ou SFTP. Le CMS est détecté automatiquement.</p>
+        </div>
+        <div class="step">
+          <div class="num">2</div>
+          <h3>Demandez</h3>
+          <p>Décrivez ce que vous voulez changer dans le chat.</p>
+        </div>
+        <div class="step">
+          <div class="num">3</div>
+          <h3>Vérifiez</h3>
+          <p>L'IA propose les fichiers modifiés. Vous voyez le diff avant/après.</p>
+        </div>
+        <div class="step">
+          <div class="num">4</div>
+          <h3>Appliquez</h3>
+          <p>Un clic : les fichiers sont modifiés et sauvegardés automatiquement.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="security" id="security">
+    <div class="container security-inner">
+      <div>
+        <h2>Vos sites, protégés</h2>
+        <ul class="sec-list">
+          <li><span class="check">✓</span> Sauvegarde automatique de chaque fichier avant modification</li>
+          <li><span class="check">✓</span> Données et clés API stockées uniquement sur votre PC</li>
+          <li><span class="check">✓</span> Accès protégé par mot de passe au lancement</li>
+          <li><span class="check">✓</span> Aperçu des modifications avant application, zéro mauvaise surprise</li>
+        </ul>
+      </div>
+      <div class="security-panel">
+        <div class="lock">🔐</div>
+        <p><strong>Zéro cloud.</strong><br>Tout reste sur votre machine — vos sites clients, vos clés API, vos identifiants de connexion ne quittent jamais votre PC.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="pricing">
+    <div class="container">
+      <div class="section-head">
+        <h2>Un prix unique, pas d'abonnement</h2>
+        <p>Vous achetez une fois, vous gardez l'outil. Sans engagement caché.</p>
+      </div>
+      <div class="pricing-card">
+        <span class="pricing-badge">Offre de lancement</span>
+        <div class="price-amount">79€<span> / licence à vie</span></div>
+        <p class="price-note">Paiement unique — aucun renouvellement, aucun abonnement</p>
+        <ul class="price-features">
+          <li><span class="check">✓</span> Accès complet à l'assistant IA</li>
+          <li><span class="check">✓</span> WordPress, WooCommerce, PrestaShop, Joomla, Drupal</li>
+          <li><span class="check">✓</span> Mises à jour incluses</li>
+          <li><span class="check">✓</span> Utilisation sur vos sites clients, sans limite de projets</li>
+        </ul>
+        <a href="#cta" class="btn btn-primary" style="width:100%;justify-content:center;">Nous contacter pour l'acheter</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta" id="cta">
+    <div class="container">
+      <div class="cta-box">
+        <h2>Cmsight — votre site, piloté par l'IA</h2>
+        <p>En vente aux agences de développement web. Contactez-nous pour une démonstration et nos conditions.</p>
+        <div class="hero-actions">
+          <a href="mailto:contact@rampedigitale.fr" class="btn btn-primary">Nous contacter</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  Créé par <a href="https://www.rampedigitale.fr">Rampe Digitale</a> · rampedigitale.fr
+</footer>
+
+</body>
+</html>
