@@ -3,10 +3,6 @@ const { getSupabaseAdmin } = require('../../lib/supabase');
 const { generateLicenseKey, addMonths } = require('../../lib/license');
 const { sendLicenseEmail } = require('../../lib/email');
 
-// Stripe signature verification needs the exact raw request bytes, so the
-// default JSON body parsing must be disabled for this route.
-module.exports.config = { api: { bodyParser: false } };
-
 function readRawBody(req) {
   return new Promise((resolve, reject) => {
     const chunks = [];
@@ -16,7 +12,7 @@ function readRawBody(req) {
   });
 }
 
-module.exports = async function handler(req, res) {
+async function handler(req, res) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     return res.status(405).end();
@@ -109,4 +105,11 @@ module.exports = async function handler(req, res) {
     console.error('stripe webhook: processing failed');
     return res.status(500).json({ error: 'Unable to process' });
   }
-};
+}
+
+// Stripe signature verification needs the exact raw request bytes, so the
+// default JSON body parsing must be disabled for this route. This must be
+// set on the same object exported as the handler, not before it's assigned.
+handler.config = { api: { bodyParser: false } };
+
+module.exports = handler;
