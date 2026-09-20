@@ -145,7 +145,8 @@ h1 .grad{background:linear-gradient(120deg,var(--accent-2),var(--flame1),var(--a
 .cms-pill:active{transform:scale(0.94);border-color:var(--accent);color:var(--text);}
 
 /* SCREENSHOTS */
-.screenshot-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;}
+.screenshot-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
+@media (max-width:940px){.screenshot-grid{grid-template-columns:repeat(2,1fr);}}
 @media (max-width:700px){.screenshot-grid{grid-template-columns:1fr;}}
 
 /* STEPS */
