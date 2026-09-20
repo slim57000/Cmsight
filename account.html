@@ -246,6 +246,19 @@
             row.appendChild(a);
             list.appendChild(row);
           });
+          if (!result.data.links.some(function (l) { return l.label === 'macOS'; })) {
+            var macRow = document.createElement('div');
+            macRow.className = 'download-row';
+            var macLabel = document.createElement('span');
+            macLabel.textContent = 'macOS';
+            var macStatus = document.createElement('span');
+            macStatus.style.color = 'var(--text-muted)';
+            macStatus.style.fontSize = '0.85rem';
+            macStatus.textContent = 'Bientôt disponible';
+            macRow.appendChild(macLabel);
+            macRow.appendChild(macStatus);
+            list.appendChild(macRow);
+          }
         })
         .catch(function () {
           info.textContent = 'Une erreur est survenue. Réessayez dans quelques instants.';
