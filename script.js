@@ -77,8 +77,10 @@ if (launchOfferNote || launchOfferBadge) {
     .then(function (config) {
       if (!config.launchOfferEndsAt) return;
       var isEn = document.documentElement.lang === 'en';
+      var strike = document.getElementById('regular-price-strike');
       if (!config.launchOfferActive) {
         if (launchOfferBadge) launchOfferBadge.textContent = isEn ? 'Standard price' : 'Prix standard';
+        if (strike) strike.style.display = 'none';
         return;
       }
       var end = new Date(config.launchOfferEndsAt);
@@ -86,8 +88,8 @@ if (launchOfferNote || launchOfferBadge) {
       if (launchOfferNote) {
         var dateLabel = end.toLocaleDateString(isEn ? 'en-US' : 'fr-FR', { day: 'numeric', month: 'long' });
         launchOfferNote.textContent = isEn
-          ? 'Offer ends in ' + daysLeft + ' day' + (daysLeft > 1 ? 's' : '') + ' (' + dateLabel + ')'
-          : "Offre valable encore " + daysLeft + ' jour' + (daysLeft > 1 ? 's' : '') + " (jusqu'au " + dateLabel + ')';
+          ? 'Offer ends in ' + daysLeft + ' day' + (daysLeft > 1 ? 's' : '') + ' (' + dateLabel + ') — €129 after that'
+          : "Offre valable encore " + daysLeft + ' jour' + (daysLeft > 1 ? 's' : '') + " (jusqu'au " + dateLabel + ') — 129€ ensuite';
       }
     })
     .catch(function () {});
