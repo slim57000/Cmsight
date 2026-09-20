@@ -144,6 +144,10 @@ h1 .grad{background:linear-gradient(120deg,var(--accent-2),var(--flame1),var(--a
 .cms-pill{background:var(--panel);border:1px solid var(--border);color:var(--text-muted);font-size:0.85rem;padding:8px 18px;border-radius:999px;transition:border-color .2s, transform .2s, color .2s;}
 .cms-pill:active{transform:scale(0.94);border-color:var(--accent);color:var(--text);}
 
+/* SCREENSHOTS */
+.screenshot-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;}
+@media (max-width:700px){.screenshot-grid{grid-template-columns:1fr;}}
+
 /* STEPS */
 .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;}
 @media (max-width:860px){.steps{grid-template-columns:repeat(2,1fr);}}
