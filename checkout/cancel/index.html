@@ -29,10 +29,19 @@
       <h1>Votre paiement a été <span class="grad">annulé</span></h1>
       <p class="lead">Aucun montant n'a été débité. Vous pouvez reprendre l'achat de votre licence EU Compliance Suite quand vous le souhaitez.</p>
       <div class="hero-actions">
-        <a href="/eu-compliance-suite.html#pricing" class="btn btn-primary">Réessayer l'achat</a>
+        <a href="/eu-compliance-suite.html#pricing" id="cancel-retry-link" class="btn btn-primary">Réessayer l'achat</a>
         <a href="/index.html" class="btn btn-ghost">Accueil Cmsight</a>
       </div>
       <p class="hero-note">Une question avant d'acheter ? Écrivez-nous à contact@rampedigitale.fr</p>
+
+      <script>
+        (function () {
+          var product = new URLSearchParams(window.location.search).get('product');
+          if (product === 'cmsight') {
+            document.getElementById('cancel-retry-link').href = '/index.html#pricing';
+          }
+        })();
+      </script>
     </div>
   </section>
 </main>

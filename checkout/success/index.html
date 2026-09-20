@@ -26,13 +26,31 @@
   <section class="hero">
     <div class="container hero-inner">
       <span class="eyebrow">✅ Paiement confirmé</span>
-      <h1>Merci pour votre achat <span class="grad">EU Compliance Suite</span></h1>
-      <p class="lead">Votre paiement a été validé. Une clé de licence vient de vous être envoyée par email, avec les instructions d'activation.</p>
+      <h1 id="success-title">Merci pour votre achat</h1>
+      <p class="lead" id="success-lead">Votre paiement a été validé.</p>
       <div class="hero-actions">
-        <a href="/eu-compliance-suite.html" class="btn btn-primary">Retour à EU Compliance Suite</a>
-        <a href="/index.html" class="btn btn-ghost">Accueil Cmsight</a>
+        <a href="/index.html" id="success-back-link" class="btn btn-primary">Voir Cmsight</a>
+        <a href="/index.html" class="btn btn-ghost">Accueil</a>
       </div>
       <p class="hero-note">Vous ne recevez rien après quelques minutes ? Vérifiez vos spams ou écrivez-nous à contact@rampedigitale.fr</p>
+
+      <script>
+        (function () {
+          var product = new URLSearchParams(window.location.search).get('product');
+          var title = document.getElementById('success-title');
+          var lead = document.getElementById('success-lead');
+          var backLink = document.getElementById('success-back-link');
+          if (product === 'cmsight') {
+            title.innerHTML = 'Merci pour votre achat <span class="grad">Cmsight</span>';
+            lead.textContent = "Votre paiement a été validé. Nous vous recontactons très prochainement par email pour finaliser l'activation de votre licence.";
+          } else {
+            title.innerHTML = 'Merci pour votre achat <span class="grad">EU Compliance Suite</span>';
+            lead.textContent = "Votre paiement a été validé. Une clé de licence vient de vous être envoyée par email, avec les instructions d'activation.";
+            backLink.textContent = 'Retour à EU Compliance Suite';
+            backLink.href = '/eu-compliance-suite.html';
+          }
+        })();
+      </script>
     </div>
   </section>
 </main>

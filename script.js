@@ -46,7 +46,12 @@ if (buyButtons.length) {
       buyButtons.forEach(function (b) { b.disabled = true; });
       var originalText = btn.textContent;
       btn.textContent = 'Redirection...';
-      fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' } })
+      var product = btn.dataset.product || 'eu-compliance-suite';
+      fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ product: product }),
+      })
         .then(function (r) { return r.json(); })
         .then(function (data) {
           if (data && data.url) {

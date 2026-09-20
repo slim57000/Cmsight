@@ -1,7 +1,8 @@
 const { getStripe } = require('../../lib/stripe');
 const { getSupabaseAdmin } = require('../../lib/supabase');
 const { generateLicenseKey, addMonths } = require('../../lib/license');
-const { sendLicenseEmail } = require('../../lib/email');
+const { sendLicenseEmail, sendPurchaseConfirmationEmail } = require('../../lib/email');
+const { findProductByPriceId } = require('../../lib/products');
 
 function readRawBody(req) {
   return new Promise((resolve, reject) => {
@@ -45,17 +46,31 @@ async function handler(req, res) {
       return res.status(200).json({ received: true });
     }
 
-    const expectedPriceId = process.env.STRIPE_PRICE_ID;
     const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 10 });
-    const priceMatches = lineItems.data.some((item) => item.price && item.price.id === expectedPriceId);
-    if (!priceMatches) {
-      console.error('stripe webhook: price mismatch, ignoring session');
+    const paidPriceIds = lineItems.data.map((item) => item.price && item.price.id).filter(Boolean);
+    // Never trust a client-supplied product name: identify the product from
+    // the price Stripe actually charged.
+    const product = paidPriceIds.map(findProductByPriceId).find(Boolean);
+    if (!product) {
+      console.error('stripe webhook: price does not match any known product, ignoring session');
       return res.status(200).json({ received: true });
     }
 
     const email = (session.customer_details && session.customer_details.email) || session.customer_email;
     if (!email) {
       console.error('stripe webhook: missing customer email, ignoring session');
+      return res.status(200).json({ received: true });
+    }
+
+    if (product === 'cmsight') {
+      // No automatic license for the Cmsight app purchase: just confirm the
+      // payment by email. Nothing is persisted, so a duplicate webhook
+      // delivery could in theory resend this confirmation once.
+      try {
+        await sendPurchaseConfirmationEmail({ to: email });
+      } catch (emailErr) {
+        console.error('stripe webhook: purchase confirmation email failed to send');
+      }
       return res.status(200).json({ received: true });
     }
 

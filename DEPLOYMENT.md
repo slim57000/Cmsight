@@ -20,8 +20,14 @@ Supabase and Vercel dashboards — no code change can substitute for them.
 
 ## 2. Stripe
 
-1. The price already exists: `price_1UHNgV2cZZwb2lytBbn1U8vk` (EU
-   Compliance Suite – Licence complète, one-time payment).
+1. Two products/prices exist:
+   - `price_1UHNgV2cZZwb2lytBbn1U8vk` — EU Compliance Suite – Licence
+     complète (one-time). Paying this triggers the full automatic flow:
+     a license key is generated, stored, and emailed.
+   - `price_1UHdhs2cZZwb2lyt4BBuPJlS` — Cmsight – Licence à vie, 79€
+     (one-time). Paying this only sends a confirmation email; there is
+     **no automatic license** for this product, by design — follow up
+     manually with the buyer.
 2. Developers > API keys: copy the **secret** key (`sk_live_...` or
    `sk_test_...` while testing) for `STRIPE_SECRET_KEY`.
 3. Developers > Webhooks > Add endpoint:
@@ -48,6 +54,7 @@ SUPABASE_SERVICE_ROLE_KEY
 STRIPE_SECRET_KEY
 STRIPE_WEBHOOK_SECRET
 STRIPE_PRICE_ID=price_1UHNgV2cZZwb2lytBbn1U8vk
+STRIPE_PRICE_ID_CMSIGHT=price_1UHdhs2cZZwb2lyt4BBuPJlS
 RESEND_API_KEY
 LICENSE_FROM_EMAIL
 CHECKOUT_SUCCESS_URL=https://cmsight.vercel.app/checkout/success
@@ -67,25 +74,37 @@ reference — never commit a real `.env`.
 ## 5. Routes added
 
 - `GET  /api/health` → `{ "ok": true }`
-- `POST /api/checkout` → creates a Stripe Checkout session for the
-  configured price and returns `{ "url": "..." }`. Stripe Checkout
-  itself collects the buyer's email.
-- `POST /api/stripe/webhook` → verifies the Stripe signature, and on a
-  paid `checkout.session.completed` for the configured price, creates a
-  license row (`EUC-XXXXXXXX-XXXXXXXX-XXXXXXXX`, 12-month expiry) and
-  emails it via Resend if configured. Idempotent on `stripe_session_id`.
+- `POST /api/checkout` → body `{ "product": "eu-compliance-suite" |
+  "cmsight" }` (defaults to `eu-compliance-suite` if omitted). Creates a
+  Stripe Checkout session for that product's price and returns
+  `{ "url": "..." }`. Stripe Checkout itself collects the buyer's email.
+  `lib/products.js` maps each product to its price env var and default
+  success/cancel path.
+- `POST /api/stripe/webhook` → verifies the Stripe signature, then
+  identifies the product from the price Stripe actually charged (never
+  from client input). For `eu-compliance-suite`: on a paid
+  `checkout.session.completed`, creates a license row
+  (`EUC-XXXXXXXX-XXXXXXXX-XXXXXXXX`, 12-month expiry) and emails it via
+  Resend if configured; idempotent on `stripe_session_id`. For
+  `cmsight`: just sends a confirmation email via Resend if configured —
+  no license row, no key, by design.
 - `POST /api/license/activate` → body `{ license, site_url, product }`.
   Validates the license, binds it to the first site that activates it,
   rejects other sites/expired/revoked licenses, and returns
   `{ success, email, expires }`. This is the endpoint the WordPress
   plugin calls at `https://cmsight.vercel.app/api/license/activate`.
 
-## 6. Commercial page
+## 6. Commercial pages
 
 `eu-compliance-suite.html` presents the product (GPSR free, the three
-licensed features) with a "Acheter la licence complète" button that
-calls `/api/checkout` and redirects to Stripe Checkout. It's linked
-from the homepage nav ("EU Compliance Suite").
+licensed features) with "Acheter la licence complète" buttons
+(`data-product="eu-compliance-suite"`, the default). It's linked from
+the homepage nav ("EU Compliance Suite").
+
+`index.html` / `en.html`'s pricing section has an "Acheter"/"Buy now"
+button with `data-product="cmsight"` for the 79€ app license. Both
+buttons share the same handler in `script.js` (class `buy-license-btn`),
+which reads `data-product` and posts it to `/api/checkout`.
 
 ## 7. Testing before going live
 
