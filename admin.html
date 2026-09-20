@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin | Cmsight</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<style>
+  .portal-card{max-width:560px;margin:40px auto 0;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:32px;text-align:left;}
+  .portal-card h2{font-family:'Space Grotesk',sans-serif;font-size:1.3rem;color:#fff;margin-bottom:10px;}
+  .portal-card p{color:var(--text-muted);font-size:0.92rem;line-height:1.55;margin-bottom:20px;}
+  .portal-card input,.portal-card textarea{width:100%;background:var(--panel-2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-family:inherit;font-size:0.92rem;margin-bottom:14px;}
+  .portal-card textarea{resize:vertical;min-height:80px;}
+  .portal-card input:focus,.portal-card textarea:focus{outline:none;border-color:var(--accent);}
+  .portal-status{font-size:0.88rem;margin-top:14px;line-height:1.5;min-height:1.3em;}
+  .portal-status.error{color:#e88;}
+  .admin-comment-row{background:var(--panel-2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;font-size:0.85rem;}
+  .admin-comment-row .meta{color:var(--text-muted);font-size:0.75rem;margin-bottom:4px;}
+</style>
+</head>
+<body>
+
+<header>
+  <nav>
+    <a href="/index.html" class="logo">
+      <span class="logo-badge">🔥</span>
+      Cmsight<span class="dot">.</span>
+    </a>
+  </nav>
+</header>
+
+<main>
+  <section class="hero" style="padding-bottom:60px;">
+    <div class="container hero-inner">
+      <span class="eyebrow">🔒 Admin</span>
+      <h1>Commentaires <span class="grad">clients</span></h1>
+      <p class="lead">Poster une réponse officielle, visible par tous les clients connectés à leur espace.</p>
+
+      <div class="portal-card" id="key-card">
+        <h2>Clé admin</h2>
+        <p>Requise pour publier ou consulter les commentaires (avec les emails).</p>
+        <input type="password" id="admin-key" placeholder="Clé admin">
+        <button type="button" id="unlock-btn" class="btn btn-primary" style="width:100%;justify-content:center;">Déverrouiller</button>
+        <p class="portal-status" id="key-status"></p>
+      </div>
+
+      <div class="portal-card" id="post-card" style="display:none;">
+        <h2>Publier un commentaire officiel</h2>
+        <form id="admin-comment-form">
+          <input type="text" id="admin-name" placeholder="Nom affiché (par défaut : Équipe Cmsight)" maxlength="60">
+          <textarea id="admin-message" placeholder="Votre message" maxlength="1000" required></textarea>
+          <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">Publier</button>
+        </form>
+        <p class="portal-status" id="admin-comment-status"></p>
+      </div>
+
+      <div class="portal-card" id="list-card" style="display:none;">
+        <h2>Tous les commentaires</h2>
+        <div id="admin-comments-list"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  Créé par <a href="https://www.rampedigitale.fr">Rampe Digitale</a> · rampedigitale.fr
+</footer>
+
+<script>
+  (function () {
+    var adminKey = '';
+    var keyCard = document.getElementById('key-card');
+    var postCard = document.getElementById('post-card');
+    var listCard = document.getElementById('list-card');
+    var keyStatus = document.getElementById('key-status');
+
+    function renderAdminComments(comments) {
+      var list = document.getElementById('admin-comments-list');
+      list.innerHTML = '';
+      comments.forEach(function (c) {
+        var row = document.createElement('div');
+        row.className = 'admin-comment-row';
+        var meta = document.createElement('div');
+        meta.className = 'meta';
+        meta.textContent = (c.is_admin ? '[Officiel] ' : '') + c.name + ' — ' + c.email + ' — ' + new Date(c.created_at).toLocaleString('fr-FR');
+        var msg = document.createElement('div');
+        msg.textContent = c.message;
+        row.appendChild(meta);
+        row.appendChild(msg);
+        list.appendChild(row);
+      });
+    }
+
+    function loadAdminComments() {
+      fetch('/api/portal/comments/admin-list', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminKey: adminKey }),
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (data) { renderAdminComments(data.comments || []); })
+        .catch(function () {});
+    }
+
+    document.getElementById('unlock-btn').addEventListener('click', function () {
+      var candidate = document.getElementById('admin-key').value;
+      keyStatus.classList.remove('error');
+      keyStatus.textContent = 'Vérification...';
+
+      fetch('/api/portal/comments/admin-list', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminKey: candidate }),
+      })
+        .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+        .then(function (result) {
+          if (!result.ok) {
+            keyStatus.classList.add('error');
+            keyStatus.textContent = 'Clé invalide.';
+            return;
+          }
+          adminKey = candidate;
+          keyStatus.textContent = '';
+          keyCard.style.display = 'none';
+          postCard.style.display = 'block';
+          listCard.style.display = 'block';
+          renderAdminComments(result.data.comments || []);
+        })
+        .catch(function () {
+          keyStatus.classList.add('error');
+          keyStatus.textContent = 'Une erreur est survenue.';
+        });
+    });
+
+    document.getElementById('admin-comment-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var nameInput = document.getElementById('admin-name');
+      var messageInput = document.getElementById('admin-message');
+      var status = document.getElementById('admin-comment-status');
+      var submitBtn = e.target.querySelector('button[type="submit"]');
+      submitBtn.disabled = true;
+      status.classList.remove('error');
+      status.textContent = 'Publication...';
+
+      fetch('/api/portal/comments/admin-create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminKey: adminKey, name: nameInput.value, message: messageInput.value }),
+      })
+        .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+        .then(function (result) {
+          submitBtn.disabled = false;
+          if (result.ok) {
+            status.textContent = 'Commentaire publié.';
+            messageInput.value = '';
+            loadAdminComments();
+          } else {
+            status.classList.add('error');
+            status.textContent = 'Erreur : commentaire invalide ou clé expirée.';
+          }
+        })
+        .catch(function () {
+          submitBtn.disabled = false;
+          status.classList.add('error');
+          status.textContent = 'Une erreur est survenue.';
+        });
+    });
+  })();
+</script>
+
+</body>
+</html>

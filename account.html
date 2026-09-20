@@ -19,8 +19,10 @@
   .portal-card textarea{resize:vertical;min-height:80px;}
   .portal-card input:focus,.portal-card textarea:focus{outline:none;border-color:var(--accent);}
   .comment-item{background:var(--panel-2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;animation:fadeInUp .35s ease both;}
-  .comment-item .comment-head{display:flex;justify-content:space-between;gap:10px;margin-bottom:6px;}
-  .comment-item .comment-name{font-weight:600;color:#fff;font-size:0.9rem;}
+  .comment-item.is-admin{background:rgba(123,111,240,0.12);border-color:var(--accent);}
+  .comment-item .comment-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px;}
+  .comment-item .comment-name{font-weight:600;color:#fff;font-size:0.9rem;display:flex;align-items:center;gap:6px;}
+  .comment-item .admin-badge{background:var(--accent);color:#fff;font-size:0.68rem;font-weight:700;letter-spacing:0.03em;text-transform:uppercase;padding:2px 8px;border-radius:999px;}
   .comment-item .comment-date{color:var(--text-muted);font-size:0.78rem;flex-shrink:0;}
   .comment-item .comment-message{color:var(--text);font-size:0.9rem;line-height:1.5;white-space:pre-wrap;word-break:break-word;}
   .portal-status{font-size:0.88rem;margin-top:14px;line-height:1.5;min-height:1.3em;}
@@ -126,12 +128,18 @@
       }
       comments.forEach(function (c) {
         var item = document.createElement('div');
-        item.className = 'comment-item';
+        item.className = 'comment-item' + (c.is_admin ? ' is-admin' : '');
         var head = document.createElement('div');
         head.className = 'comment-head';
         var name = document.createElement('span');
         name.className = 'comment-name';
-        name.textContent = c.name;
+        name.appendChild(document.createTextNode(c.name));
+        if (c.is_admin) {
+          var badge = document.createElement('span');
+          badge.className = 'admin-badge';
+          badge.textContent = 'Officiel';
+          name.appendChild(badge);
+        }
         var date = document.createElement('span');
         date.className = 'comment-date';
         date.textContent = new Date(c.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });

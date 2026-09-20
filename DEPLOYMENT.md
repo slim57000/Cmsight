@@ -15,7 +15,11 @@ Supabase and Vercel dashboards — no code change can substitute for them.
    - `supabase/migrations/0002_create_purchases_and_access_tokens.sql` —
      `public.purchases` (proof of a Cmsight purchase) and
      `public.access_tokens` (hashed customer-portal magic-link tokens).
-   All three tables have Row Level Security **enabled and no policies** —
+   - `supabase/migrations/0003_create_comments.sql` — `public.comments`
+     (customer-portal comments).
+   - `supabase/migrations/0004_add_is_admin_to_comments.sql` — adds
+     `is_admin` to `public.comments`.
+   All tables have Row Level Security **enabled and no policies** —
    unreachable from the browser/anon key by design; every read/write goes
    through `SUPABASE_SERVICE_ROLE_KEY` from the serverless functions.
 3. Copy `Project URL` and the `service_role` key (Project Settings > API)
@@ -69,6 +73,7 @@ CMSIGHT_DOWNLOAD_URL_MAC
 CMSIGHT_VERSION
 LAUNCH_OFFER_END_DATE=2026-10-05
 STRIPE_PRICE_ID_CMSIGHT_REGULAR
+ADMIN_API_KEY
 ```
 
 `CHECKOUT_SUCCESS_URL` / `CHECKOUT_CANCEL_URL` are optional — if unset,
@@ -96,6 +101,12 @@ once you've created that price in Stripe and set the env var; until then
 it keeps using the launch price, so nothing breaks if the new price isn't
 ready yet. Leaving `LAUNCH_OFFER_END_DATE` unset means the offer never
 ends.
+
+`ADMIN_API_KEY` gates `/admin.html` and the two admin comment routes.
+Generate a long random value yourself (e.g. `openssl rand -hex 32`) —
+never reuse a secret from elsewhere. Nothing admin-related works until
+this is set (there's no default/fallback, unlike the other optional
+vars above).
 
 `.env.example` lists the same variables with no values, for local
 reference — never commit a real `.env`.
@@ -134,6 +145,17 @@ reference — never commit a real `.env`.
   email and download links from `lib/products.js#getCmsightDownloads()`;
   returns `notReady: true` until the `CMSIGHT_DOWNLOAD_URL_*` vars are
   set.
+- `POST /api/portal/comments/list` → body `{ token }`. Customer-facing;
+  returns `{ comments: [{ name, message, is_admin, created_at }] }` —
+  never the commenter's raw email.
+- `POST /api/portal/comments/create` → body `{ token, message, name? }`.
+  Customer-facing; publishes immediately (no moderation), `name`
+  defaults to "Client" if omitted.
+- `POST /api/portal/comments/admin-list` / `admin-create` → body
+  `{ adminKey, ... }` instead of a customer token. `admin-list` also
+  returns the real email per comment (customer-list never does);
+  `admin-create` posts with `is_admin: true` and defaults the display
+  name to "Équipe Cmsight". Used by `/admin.html`.
 
 ## 6. Commercial pages
 
@@ -150,8 +172,13 @@ which reads `data-product` and posts it to `/api/checkout`.
 `account.html` is the customer portal for Cmsight buyers: enter your
 email to get an access link (`/api/portal/request-link`), or open the
 page with `?token=...` (from the emailed link) to see download links
-(`/api/portal/downloads`). Linked from the site footer and from
-`checkout/success/index.html` after a Cmsight purchase.
+(`/api/portal/downloads`) and post/read comments. Linked from the site
+footer and from `checkout/success/index.html` after a Cmsight purchase.
+
+`admin.html` (not linked from anywhere — bookmark it) lets you, after
+entering `ADMIN_API_KEY`, post an official reply into that same comment
+feed (shown to customers with an "Officiel" badge) and see every
+comment with its real email attached.
 
 ## 7. Testing before going live
 
