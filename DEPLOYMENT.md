@@ -67,6 +67,8 @@ SITE_URL=https://cmsight.vercel.app
 CMSIGHT_DOWNLOAD_URL_WINDOWS
 CMSIGHT_DOWNLOAD_URL_MAC
 CMSIGHT_VERSION
+LAUNCH_OFFER_END_DATE=2026-10-05
+STRIPE_PRICE_ID_CMSIGHT_REGULAR
 ```
 
 `CHECKOUT_SUCCESS_URL` / `CHECKOUT_CANCEL_URL` are optional — if unset,
@@ -85,12 +87,24 @@ production domain ever changes, otherwise the hardcoded fallback works.
 are actually hosted somewhere. Until then, `account.html` tells buyers
 the download will be available soon instead of showing a broken link.
 
+`LAUNCH_OFFER_END_DATE` drives both the pricing-badge countdown on
+`index.html`/`en.html` (via `GET /api/config`, public/no secrets) and the
+actual price switch in `/api/checkout`. Set to 15 days from now
+(`2026-10-05`) — checked live on each request, no cron needed. Past that
+date, Cmsight checkout only switches to `STRIPE_PRICE_ID_CMSIGHT_REGULAR`
+once you've created that price in Stripe and set the env var; until then
+it keeps using the launch price, so nothing breaks if the new price isn't
+ready yet. Leaving `LAUNCH_OFFER_END_DATE` unset means the offer never
+ends.
+
 `.env.example` lists the same variables with no values, for local
 reference — never commit a real `.env`.
 
 ## 5. Routes added
 
 - `GET  /api/health` → `{ "ok": true }`
+- `GET  /api/config` → `{ "launchOfferActive": bool, "launchOfferEndsAt": "..." }`.
+  Public, no secrets — drives the pricing-badge countdown.
 - `POST /api/checkout` → body `{ "product": "eu-compliance-suite" |
   "cmsight" }` (defaults to `eu-compliance-suite` if omitted). Creates a
   Stripe Checkout session for that product's price and returns

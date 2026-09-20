@@ -11,15 +11,23 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/style.css">
 <style>
-  .portal-card{max-width:480px;margin:40px auto 0;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:32px;text-align:left;}
+  .hero-inner > .portal-card{animation-delay:.35s;}
+  .portal-card{max-width:480px;margin:40px auto 0;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:32px;text-align:left;opacity:1;transition:opacity .3s ease;}
   .portal-card h2{font-family:'Space Grotesk',sans-serif;font-size:1.3rem;color:#fff;margin-bottom:10px;}
   .portal-card p{color:var(--text-muted);font-size:0.92rem;line-height:1.55;margin-bottom:20px;}
-  .portal-card input{width:100%;background:var(--panel-2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-family:inherit;font-size:0.92rem;margin-bottom:14px;}
+  .portal-card input{width:100%;background:var(--panel-2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-family:inherit;font-size:0.92rem;margin-bottom:14px;transition:border-color .2s;}
   .portal-card input:focus{outline:none;border-color:var(--accent);}
-  .portal-status{font-size:0.88rem;margin-top:14px;line-height:1.5;}
+  .portal-status{font-size:0.88rem;margin-top:14px;line-height:1.5;min-height:1.3em;}
   .portal-status.error{color:#e88;}
-  .download-row{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--panel-2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;}
+  .download-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;background:var(--panel-2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;transition:border-color .2s;animation:fadeInUp .35s ease both;}
+  .download-row:nth-child(2){animation-delay:.06s;}
+  .download-row:nth-child(3){animation-delay:.12s;}
+  .download-row:hover{border-color:var(--accent);}
   .download-row span{font-weight:600;color:#fff;}
+  .download-row .btn{flex-shrink:0;}
+  @media (max-width:480px){
+    .portal-card{padding:22px;margin-top:28px;}
+  }
 </style>
 </head>
 <body>
@@ -78,9 +86,21 @@
     var downloadsCard = document.getElementById('downloads-card');
     var intro = document.getElementById('portal-intro');
 
+    function swapCard(hide, show) {
+      hide.style.opacity = '0';
+      setTimeout(function () {
+        hide.style.display = 'none';
+        show.style.display = 'block';
+        show.style.opacity = '0';
+        requestAnimationFrame(function () { show.style.opacity = '1'; });
+      }, 200);
+    }
+
     if (token) {
       requestCard.style.display = 'none';
       downloadsCard.style.display = 'block';
+      downloadsCard.style.opacity = '0';
+      requestAnimationFrame(function () { downloadsCard.style.opacity = '1'; });
       var info = document.getElementById('downloads-info');
       var list = document.getElementById('downloads-list');
 
@@ -92,9 +112,8 @@
         .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
         .then(function (result) {
           if (!result.ok) {
-            info.textContent = "Ce lien n'est plus valide ou a expiré. Demandez-en un nouveau ci-dessous.";
-            downloadsCard.style.display = 'none';
-            requestCard.style.display = 'block';
+            document.getElementById('request-status').textContent = "Ce lien n'est plus valide ou a expiré. Demandez-en un nouveau ci-dessous.";
+            swapCard(downloadsCard, requestCard);
             return;
           }
           intro.textContent = 'Connecté en tant que ' + result.data.email + '.';

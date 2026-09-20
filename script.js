@@ -69,6 +69,30 @@ if (buyButtons.length) {
   });
 }
 
+var launchOfferNote = document.getElementById('launch-offer-note');
+var launchOfferBadge = document.getElementById('launch-offer-badge');
+if (launchOfferNote || launchOfferBadge) {
+  fetch('/api/config')
+    .then(function (r) { return r.json(); })
+    .then(function (config) {
+      if (!config.launchOfferEndsAt) return;
+      var isEn = document.documentElement.lang === 'en';
+      if (!config.launchOfferActive) {
+        if (launchOfferBadge) launchOfferBadge.textContent = isEn ? 'Standard price' : 'Prix standard';
+        return;
+      }
+      var end = new Date(config.launchOfferEndsAt);
+      var daysLeft = Math.max(1, Math.ceil((end - Date.now()) / 86400000));
+      if (launchOfferNote) {
+        var dateLabel = end.toLocaleDateString(isEn ? 'en-US' : 'fr-FR', { day: 'numeric', month: 'long' });
+        launchOfferNote.textContent = isEn
+          ? 'Offer ends in ' + daysLeft + ' day' + (daysLeft > 1 ? 's' : '') + ' (' + dateLabel + ')'
+          : "Offre valable encore " + daysLeft + ' jour' + (daysLeft > 1 ? 's' : '') + " (jusqu'au " + dateLabel + ')';
+      }
+    })
+    .catch(function () {});
+}
+
 var contactForm = document.getElementById('contact-form');
 if (contactForm) {
   contactForm.addEventListener('submit', function (e) {
