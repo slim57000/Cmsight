@@ -1,8 +1,11 @@
 const { getStripe } = require('../../lib/stripe');
 const { getSupabaseAdmin } = require('../../lib/supabase');
 const { generateLicenseKey, addMonths } = require('../../lib/license');
-const { sendLicenseEmail, sendPurchaseConfirmationEmail } = require('../../lib/email');
+const { sendLicenseEmail, sendAccessLinkEmail } = require('../../lib/email');
 const { findProductByPriceId } = require('../../lib/products');
+const { generateAccessToken, hashToken } = require('../../lib/tokens');
+
+const PORTAL_TOKEN_TTL_DAYS = 30;
 
 function readRawBody(req) {
   return new Promise((resolve, reject) => {
@@ -62,19 +65,51 @@ async function handler(req, res) {
       return res.status(200).json({ received: true });
     }
 
+    const supabase = getSupabaseAdmin();
+
     if (product === 'cmsight') {
-      // No automatic license for the Cmsight app purchase: just confirm the
-      // payment by email. Nothing is persisted, so a duplicate webhook
-      // delivery could in theory resend this confirmation once.
-      try {
-        await sendPurchaseConfirmationEmail({ to: email });
-      } catch (emailErr) {
-        console.error('stripe webhook: purchase confirmation email failed to send');
+      // No automatic license for the Cmsight app purchase: record the
+      // purchase (idempotent on stripe_session_id) and email a customer
+      // portal access link (downloads + updates) instead of a license key.
+      const { error: purchaseInsertError } = await supabase.from('purchases').insert({
+        email,
+        product: 'cmsight',
+        stripe_session_id: session.id,
+      });
+
+      if (purchaseInsertError && purchaseInsertError.code !== '23505') {
+        console.error('stripe webhook: failed to store purchase');
+        return res.status(500).json({ error: 'Unable to process' });
       }
+
+      if (purchaseInsertError && purchaseInsertError.code === '23505') {
+        // Already processed by a previous delivery of this same event.
+        return res.status(200).json({ received: true });
+      }
+
+      const rawToken = generateAccessToken();
+      const expiresAt = new Date(Date.now() + PORTAL_TOKEN_TTL_DAYS * 86400000);
+      const { error: tokenInsertError } = await supabase.from('access_tokens').insert({
+        email,
+        token_hash: hashToken(rawToken),
+        purpose: 'cmsight-downloads',
+        expires_at: expiresAt.toISOString(),
+      });
+
+      if (tokenInsertError) {
+        console.error('stripe webhook: failed to store access token');
+        return res.status(500).json({ error: 'Unable to process' });
+      }
+
+      const portalUrl = `${process.env.SITE_URL || 'https://cmsight.vercel.app'}/account.html?token=${rawToken}`;
+      try {
+        await sendAccessLinkEmail({ to: email, url: portalUrl, isNewPurchase: true });
+      } catch (emailErr) {
+        console.error('stripe webhook: access link email failed to send');
+      }
+
       return res.status(200).json({ received: true });
     }
-
-    const supabase = getSupabaseAdmin();
 
     // Idempotency guard: skip if this session was already processed
     // (webhook retries, duplicate deliveries).

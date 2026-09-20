@@ -9,11 +9,15 @@ Supabase and Vercel dashboards — no code change can substitute for them.
 ## 1. Supabase
 
 1. Create a Supabase project (or use an existing one).
-2. In the SQL editor, run `supabase/migrations/0001_create_licenses.sql`.
-   It creates `public.licenses` with Row Level Security **enabled and no
-   policies** — the table is unreachable from the browser/anon key by
-   design; every read/write goes through `SUPABASE_SERVICE_ROLE_KEY` from
-   the serverless functions.
+2. In the SQL editor, run, in order:
+   - `supabase/migrations/0001_create_licenses.sql` — `public.licenses`
+     (EU Compliance Suite).
+   - `supabase/migrations/0002_create_purchases_and_access_tokens.sql` —
+     `public.purchases` (proof of a Cmsight purchase) and
+     `public.access_tokens` (hashed customer-portal magic-link tokens).
+   All three tables have Row Level Security **enabled and no policies** —
+   unreachable from the browser/anon key by design; every read/write goes
+   through `SUPABASE_SERVICE_ROLE_KEY` from the serverless functions.
 3. Copy `Project URL` and the `service_role` key (Project Settings > API)
    for the environment variables below. Never put the service_role key
    in anything shipped to the browser.
@@ -59,6 +63,10 @@ RESEND_API_KEY
 LICENSE_FROM_EMAIL
 CHECKOUT_SUCCESS_URL=https://cmsight.vercel.app/checkout/success
 CHECKOUT_CANCEL_URL=https://cmsight.vercel.app/checkout/cancel
+SITE_URL=https://cmsight.vercel.app
+CMSIGHT_DOWNLOAD_URL_WINDOWS
+CMSIGHT_DOWNLOAD_URL_MAC
+CMSIGHT_VERSION
 ```
 
 `CHECKOUT_SUCCESS_URL` / `CHECKOUT_CANCEL_URL` are optional — if unset,
@@ -67,6 +75,15 @@ on the request's own origin. The dedicated pages
 (`checkout/success/index.html`, `checkout/cancel/index.html`) give a
 cleaner post-payment experience and are what these two variables point
 to by default.
+
+`SITE_URL` is used to build the customer-portal link emailed after a
+Cmsight purchase (`{SITE_URL}/account.html?token=...`) — set it if the
+production domain ever changes, otherwise the hardcoded fallback works.
+
+`CMSIGHT_DOWNLOAD_URL_WINDOWS` / `CMSIGHT_DOWNLOAD_URL_MAC` /
+`CMSIGHT_VERSION` are optional — leave them unset until the installers
+are actually hosted somewhere. Until then, `account.html` tells buyers
+the download will be available soon instead of showing a broken link.
 
 `.env.example` lists the same variables with no values, for local
 reference — never commit a real `.env`.
@@ -86,13 +103,23 @@ reference — never commit a real `.env`.
   `checkout.session.completed`, creates a license row
   (`EUC-XXXXXXXX-XXXXXXXX-XXXXXXXX`, 12-month expiry) and emails it via
   Resend if configured; idempotent on `stripe_session_id`. For
-  `cmsight`: just sends a confirmation email via Resend if configured —
-  no license row, no key, by design.
+  `cmsight`: records the purchase in `public.purchases` (idempotent on
+  `stripe_session_id`), issues a customer-portal access token, and
+  emails a link to `account.html` — no license row, no key, by design.
 - `POST /api/license/activate` → body `{ license, site_url, product }`.
   Validates the license, binds it to the first site that activates it,
   rejects other sites/expired/revoked licenses, and returns
   `{ success, email, expires }`. This is the endpoint the WordPress
   plugin calls at `https://cmsight.vercel.app/api/license/activate`.
+- `POST /api/portal/request-link` → body `{ email }`. Always returns the
+  same generic message regardless of whether that email has a Cmsight
+  purchase (avoids leaking who bought it). If it does, emails a fresh
+  30-day access token to `account.html`.
+- `POST /api/portal/downloads` → body `{ token }`. Resolves a
+  customer-portal token (hash-compared, 30-day expiry) to the buyer's
+  email and download links from `lib/products.js#getCmsightDownloads()`;
+  returns `notReady: true` until the `CMSIGHT_DOWNLOAD_URL_*` vars are
+  set.
 
 ## 6. Commercial pages
 
@@ -105,6 +132,12 @@ the homepage nav ("EU Compliance Suite").
 button with `data-product="cmsight"` for the 79€ app license. Both
 buttons share the same handler in `script.js` (class `buy-license-btn`),
 which reads `data-product` and posts it to `/api/checkout`.
+
+`account.html` is the customer portal for Cmsight buyers: enter your
+email to get an access link (`/api/portal/request-link`), or open the
+page with `?token=...` (from the emailed link) to see download links
+(`/api/portal/downloads`). Linked from the site footer and from
+`checkout/success/index.html` after a Cmsight purchase.
 
 ## 7. Testing before going live
 

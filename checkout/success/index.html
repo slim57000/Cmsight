@@ -42,7 +42,9 @@
           var backLink = document.getElementById('success-back-link');
           if (product === 'cmsight') {
             title.innerHTML = 'Merci pour votre achat <span class="grad">Cmsight</span>';
-            lead.textContent = "Votre paiement a été validé. Nous vous recontactons très prochainement par email pour finaliser l'activation de votre licence.";
+            lead.textContent = "Votre paiement a été validé. Un email vient de vous être envoyé avec votre lien d'accès à l'espace client (téléchargements et mises à jour).";
+            backLink.textContent = 'Accéder à mon espace';
+            backLink.href = '/account.html';
           } else {
             title.innerHTML = 'Merci pour votre achat <span class="grad">EU Compliance Suite</span>';
             lead.textContent = "Votre paiement a été validé. Une clé de licence vient de vous être envoyée par email, avec les instructions d'activation.";

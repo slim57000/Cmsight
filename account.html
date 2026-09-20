@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mon espace | Cmsight</title>
+<meta name="description" content="Accédez à vos téléchargements et mises à jour Cmsight.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<style>
+  .portal-card{max-width:480px;margin:40px auto 0;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:32px;text-align:left;}
+  .portal-card h2{font-family:'Space Grotesk',sans-serif;font-size:1.3rem;color:#fff;margin-bottom:10px;}
+  .portal-card p{color:var(--text-muted);font-size:0.92rem;line-height:1.55;margin-bottom:20px;}
+  .portal-card input{width:100%;background:var(--panel-2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-family:inherit;font-size:0.92rem;margin-bottom:14px;}
+  .portal-card input:focus{outline:none;border-color:var(--accent);}
+  .portal-status{font-size:0.88rem;margin-top:14px;line-height:1.5;}
+  .portal-status.error{color:#e88;}
+  .download-row{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--panel-2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;}
+  .download-row span{font-weight:600;color:#fff;}
+</style>
+</head>
+<body>
+
+<div class="scroll-progress" id="scroll-progress"></div>
+
+<header>
+  <nav>
+    <a href="/index.html" class="logo">
+      <span class="logo-badge">🔥</span>
+      Cmsight<span class="dot">.</span>
+    </a>
+    <div class="nav-right">
+      <a href="/index.html" class="nav-cta">Accueil</a>
+    </div>
+  </nav>
+</header>
+
+<main>
+  <section class="hero" style="padding-bottom:60px;">
+    <div class="container hero-inner">
+      <span class="eyebrow">🔑 Espace client</span>
+      <h1>Vos <span class="grad">téléchargements</span> Cmsight</h1>
+      <p class="lead" id="portal-intro">Retrouvez ici le lien de téléchargement et les mises à jour de votre licence Cmsight.</p>
+
+      <div class="portal-card" id="request-card">
+        <h2>Recevoir mon lien d'accès</h2>
+        <p>Entrez l'adresse email utilisée lors de votre achat. Si un achat existe, vous recevrez un lien d'accès par email.</p>
+        <form id="request-form">
+          <input type="email" id="request-email" placeholder="Votre email" required>
+          <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">Recevoir le lien</button>
+        </form>
+        <p class="portal-status" id="request-status"></p>
+      </div>
+
+      <div class="portal-card" id="downloads-card" style="display:none;">
+        <h2>Vos téléchargements</h2>
+        <p id="downloads-info"></p>
+        <div id="downloads-list"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  Créé par <a href="https://www.rampedigitale.fr">Rampe Digitale</a> · rampedigitale.fr
+</footer>
+
+<button id="back-to-top" class="back-to-top" aria-label="Retour en haut">↑</button>
+
+<script src="/script.js"></script>
+<script>
+  (function () {
+    var token = new URLSearchParams(window.location.search).get('token');
+    var requestCard = document.getElementById('request-card');
+    var downloadsCard = document.getElementById('downloads-card');
+    var intro = document.getElementById('portal-intro');
+
+    if (token) {
+      requestCard.style.display = 'none';
+      downloadsCard.style.display = 'block';
+      var info = document.getElementById('downloads-info');
+      var list = document.getElementById('downloads-list');
+
+      fetch('/api/portal/downloads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: token }),
+      })
+        .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+        .then(function (result) {
+          if (!result.ok) {
+            info.textContent = "Ce lien n'est plus valide ou a expiré. Demandez-en un nouveau ci-dessous.";
+            downloadsCard.style.display = 'none';
+            requestCard.style.display = 'block';
+            return;
+          }
+          intro.textContent = 'Connecté en tant que ' + result.data.email + '.';
+          if (result.data.notReady) {
+            info.textContent = "Le lien de téléchargement sera disponible très prochainement — vous recevrez un email dès qu'il sera prêt.";
+            return;
+          }
+          info.textContent = result.data.version ? ('Dernière version disponible : v' + result.data.version) : 'Dernière version disponible :';
+          result.data.links.forEach(function (link) {
+            var row = document.createElement('div');
+            row.className = 'download-row';
+            var label = document.createElement('span');
+            label.textContent = link.label;
+            var a = document.createElement('a');
+            a.href = link.url;
+            a.className = 'btn btn-primary';
+            a.textContent = 'Télécharger';
+            row.appendChild(label);
+            row.appendChild(a);
+            list.appendChild(row);
+          });
+        })
+        .catch(function () {
+          info.textContent = 'Une erreur est survenue. Réessayez dans quelques instants.';
+        });
+      return;
+    }
+
+    var form = document.getElementById('request-form');
+    var status = document.getElementById('request-status');
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var email = document.getElementById('request-email').value;
+      var submitBtn = form.querySelector('button[type="submit"]');
+      submitBtn.disabled = true;
+      status.classList.remove('error');
+      status.textContent = 'Envoi en cours...';
+
+      fetch('/api/portal/request-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email }),
+      })
+        .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+        .then(function (result) {
+          submitBtn.disabled = false;
+          if (result.ok) {
+            status.textContent = result.data.message;
+          } else {
+            status.classList.add('error');
+            status.textContent = "Adresse email invalide.";
+          }
+        })
+        .catch(function () {
+          submitBtn.disabled = false;
+          status.classList.add('error');
+          status.textContent = 'Une erreur est survenue. Réessayez dans quelques instants.';
+        });
+    });
+  })();
+</script>
+
+</body>
+</html>
