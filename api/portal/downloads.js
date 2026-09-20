@@ -1,5 +1,4 @@
-const { getSupabaseAdmin } = require('../../lib/supabase');
-const { hashToken } = require('../../lib/tokens');
+const { resolveAccessToken } = require('../../lib/portalAuth');
 const { getCmsightDownloads } = require('../../lib/products');
 
 // Resolves a customer-portal access token (from the emailed magic link)
@@ -11,34 +10,16 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const token = req.body && req.body.token;
-  if (typeof token !== 'string' || token.length < 32) {
-    return res.status(400).json({ error: 'Invalid token' });
-  }
-
   try {
-    const supabase = getSupabaseAdmin();
-
-    const { data: row, error } = await supabase
-      .from('access_tokens')
-      .select('email, expires_at')
-      .eq('token_hash', hashToken(token))
-      .eq('purpose', 'cmsight-downloads')
-      .maybeSingle();
-
-    if (error) {
-      console.error('portal/downloads: lookup failed');
-      return res.status(500).json({ error: 'Unable to process' });
-    }
-
-    if (!row || new Date(row.expires_at).getTime() < Date.now()) {
+    const account = await resolveAccessToken(req.body && req.body.token);
+    if (!account) {
       return res.status(401).json({ error: 'Invalid or expired link' });
     }
 
     const downloads = getCmsightDownloads();
 
     return res.status(200).json({
-      email: row.email,
+      email: account.email,
       version: downloads.version,
       links: downloads.links,
       notReady: downloads.notReady,

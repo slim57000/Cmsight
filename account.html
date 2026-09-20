@@ -15,8 +15,14 @@
   .portal-card{max-width:480px;margin:40px auto 0;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:32px;text-align:left;opacity:1;transition:opacity .3s ease;}
   .portal-card h2{font-family:'Space Grotesk',sans-serif;font-size:1.3rem;color:#fff;margin-bottom:10px;}
   .portal-card p{color:var(--text-muted);font-size:0.92rem;line-height:1.55;margin-bottom:20px;}
-  .portal-card input{width:100%;background:var(--panel-2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-family:inherit;font-size:0.92rem;margin-bottom:14px;transition:border-color .2s;}
-  .portal-card input:focus{outline:none;border-color:var(--accent);}
+  .portal-card input,.portal-card textarea{width:100%;background:var(--panel-2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-family:inherit;font-size:0.92rem;margin-bottom:14px;transition:border-color .2s;}
+  .portal-card textarea{resize:vertical;min-height:80px;}
+  .portal-card input:focus,.portal-card textarea:focus{outline:none;border-color:var(--accent);}
+  .comment-item{background:var(--panel-2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;animation:fadeInUp .35s ease both;}
+  .comment-item .comment-head{display:flex;justify-content:space-between;gap:10px;margin-bottom:6px;}
+  .comment-item .comment-name{font-weight:600;color:#fff;font-size:0.9rem;}
+  .comment-item .comment-date{color:var(--text-muted);font-size:0.78rem;flex-shrink:0;}
+  .comment-item .comment-message{color:var(--text);font-size:0.9rem;line-height:1.5;white-space:pre-wrap;word-break:break-word;}
   .portal-status{font-size:0.88rem;margin-top:14px;line-height:1.5;min-height:1.3em;}
   .portal-status.error{color:#e88;}
   .download-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;background:var(--panel-2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;transition:border-color .2s;animation:fadeInUp .35s ease both;}
@@ -68,6 +74,18 @@
         <p id="downloads-info"></p>
         <div id="downloads-list"></div>
       </div>
+
+      <div class="portal-card" id="comments-card" style="display:none;">
+        <h2>Commentaires clients</h2>
+        <p>Visible uniquement par les autres clients Cmsight connectés à leur espace.</p>
+        <form id="comment-form">
+          <input type="text" id="comment-name" placeholder="Votre nom (optionnel)" maxlength="60">
+          <textarea id="comment-message" placeholder="Votre commentaire" maxlength="1000" required></textarea>
+          <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">Publier</button>
+        </form>
+        <p class="portal-status" id="comment-status"></p>
+        <div id="comments-list"></div>
+      </div>
     </div>
   </section>
 </main>
@@ -96,6 +114,90 @@
       }, 200);
     }
 
+    function renderComments(comments) {
+      var commentsList = document.getElementById('comments-list');
+      commentsList.innerHTML = '';
+      if (!comments.length) {
+        var empty = document.createElement('p');
+        empty.className = 'portal-status';
+        empty.textContent = 'Aucun commentaire pour le moment. Soyez le premier à en laisser un !';
+        commentsList.appendChild(empty);
+        return;
+      }
+      comments.forEach(function (c) {
+        var item = document.createElement('div');
+        item.className = 'comment-item';
+        var head = document.createElement('div');
+        head.className = 'comment-head';
+        var name = document.createElement('span');
+        name.className = 'comment-name';
+        name.textContent = c.name;
+        var date = document.createElement('span');
+        date.className = 'comment-date';
+        date.textContent = new Date(c.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+        head.appendChild(name);
+        head.appendChild(date);
+        var msg = document.createElement('p');
+        msg.className = 'comment-message';
+        msg.textContent = c.message;
+        item.appendChild(head);
+        item.appendChild(msg);
+        commentsList.appendChild(item);
+      });
+    }
+
+    function loadComments(portalToken) {
+      fetch('/api/portal/comments/list', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: portalToken }),
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (data) { renderComments(data.comments || []); })
+        .catch(function () {});
+    }
+
+    function initComments(portalToken) {
+      var commentsCard = document.getElementById('comments-card');
+      commentsCard.style.display = 'block';
+      loadComments(portalToken);
+
+      var commentForm = document.getElementById('comment-form');
+      var commentStatus = document.getElementById('comment-status');
+      commentForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var nameInput = document.getElementById('comment-name');
+        var messageInput = document.getElementById('comment-message');
+        var submitBtn = commentForm.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        commentStatus.classList.remove('error');
+        commentStatus.textContent = 'Publication...';
+
+        fetch('/api/portal/comments/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: portalToken, name: nameInput.value, message: messageInput.value }),
+        })
+          .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+          .then(function (result) {
+            submitBtn.disabled = false;
+            if (result.ok) {
+              commentStatus.textContent = 'Commentaire publié.';
+              messageInput.value = '';
+              loadComments(portalToken);
+            } else {
+              commentStatus.classList.add('error');
+              commentStatus.textContent = 'Merci de saisir un commentaire valide.';
+            }
+          })
+          .catch(function () {
+            submitBtn.disabled = false;
+            commentStatus.classList.add('error');
+            commentStatus.textContent = 'Une erreur est survenue. Réessayez dans quelques instants.';
+          });
+      });
+    }
+
     if (token) {
       requestCard.style.display = 'none';
       downloadsCard.style.display = 'block';
@@ -117,6 +219,7 @@
             return;
           }
           intro.textContent = 'Connecté en tant que ' + result.data.email + '.';
+          initComments(token);
           if (result.data.notReady) {
             info.textContent = "Le lien de téléchargement sera disponible très prochainement — vous recevrez un email dès qu'il sera prêt.";
             return;
