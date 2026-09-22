@@ -44,8 +44,26 @@ Au premier lancement, le formulaire de consentement Google (UMP) s'affiche en Eu
 - iOS : ajoutez `NSUserTrackingUsageDescription` dans `Info.plist`.
 - Remplacez `PRIVACY_URL` et `GAME_URL` en haut de `www/game.js`.
 
+## Firebase : pas à pas
+1. **Créer le projet** sur https://console.firebase.google.com → « Ajouter un projet » (activez Google Analytics).
+2. **Ajouter les apps** avec l'ID `com.stacksnap.game` :
+   - Android → téléchargez `google-services.json` → `android/app/google-services.json`
+   - iOS → téléchargez `GoogleService-Info.plist` → glissez-le dans Xcode sous `App/App`
+3. **Authentication** → Méthodes de connexion → activez **Anonyme**, **Game Center** et **Play Jeux** (pour Play Jeux, collez l'ID client OAuth web et son secret depuis la Google Cloud Console).
+4. **Firestore Database** → Créer une base (mode production, région `eur3` pour l'Europe).
+5. **Règles de sécurité** : installez la CLI puis déployez les règles fournies :
+   ```
+   npm i -g firebase-tools && firebase login
+   firebase use --add        # choisissez votre projet
+   firebase deploy --only firestore:rules
+   ```
+6. **Brancher dans l'app** : `npm install && npx cap sync`. Sur iOS, ajoutez la capacité **Game Center** dans Xcode.
+7. **Vérifier** : Analytics → DebugView (lancez l'app avec `-FIRDebugEnabled` sur iOS ou `adb shell setprop debug.firebase.analytics.app com.stacksnap.game` sur Android).
+
 ## Sauvegarde
-La progression est stockée sur l'appareil. Options → « Copier mon code » génère un code de transfert, à coller sur le nouvel appareil puis « Restaurer ». Une vraie sauvegarde cloud automatique nécessite un serveur (par ex. Firebase Auth + Firestore).
+- **Cloud automatique** (app native) : le joueur est connecté via Game Center / Play Jeux (ou en anonyme à défaut). Sa sauvegarde est stockée dans Firestore (`saves/{uid}`) et envoyée 4 s après chaque changement et à la mise en arrière-plan. Sur un nouvel appareil, elle est récupérée au lancement ; les achats, skins et succès ne sont jamais perdus lors d'une fusion.
+- **Code de transfert** (toutes plateformes) : Options → « Copier mon code », puis « Restaurer » sur l'autre appareil.
+- Règles Firestore : `firebase/firestore.rules` (chaque joueur n'accède qu'à sa propre sauvegarde).
 
 ## Publicités (AdMob)
 Le plugin `@capacitor-community/admob` est utilisé automatiquement dans l'app native ; sur le web, les pubs sont simulées.

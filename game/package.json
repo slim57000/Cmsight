@@ -19,7 +19,9 @@
     "@capacitor/local-notifications": "^6.0.0",
     "@capacitor/haptics": "^6.0.0",
     "@capacitor-firebase/analytics": "^6.0.0",
-    "firebase": "^10.0.0"
+    "firebase": "^10.0.0",
+    "@capacitor-firebase/authentication": "^6.0.0",
+    "@capacitor-firebase/firestore": "^6.0.0"
   },
   "devDependencies": {
     "@capacitor/cli": "^6.0.0",

@@ -30,7 +30,46 @@ const DEF = {coins: 0, owned: ['classic', 'bg_night', 'snd_soft', 'fx_squares'],
 let S;
 try { S = Object.assign(clone(DEF), JSON.parse(localStorage.getItem('ss_save')) || {}) } catch { S = clone(DEF) }
 for (const k of ['inv', 'stats', 'passClaimed']) S[k] = Object.assign(clone(DEF[k]), S[k]);
-const save = () => { try { localStorage.setItem('ss_save', JSON.stringify(S)) } catch {} };
+const fresh = (() => { try { return !localStorage.getItem('ss_save') } catch { return true } })();
+const sig = () => JSON.stringify({...S, updatedAt: 0, syncedAt: 0});
+let lastSig = sig();
+function save(){ // horodate seulement les vrais changements, puis planifie l'envoi cloud
+  const js = sig(); if (js === lastSig) return; lastSig = js; S.updatedAt = Date.now();
+  try { localStorage.setItem('ss_save', JSON.stringify(S)) } catch {}
+  if (cloudUid) { clearTimeout(cloudTimer); cloudTimer = setTimeout(cloudPush, 4000) }
+}
+
+// ---------- Sauvegarde cloud (Firebase Auth + Firestore), liée au compte Game Center / Play Jeux
+let cloudUid = null, cloudTimer;
+const FA = () => plugin('FirebaseAuthentication'), FS = () => plugin('FirebaseFirestore');
+async function cloudInit(){
+  const A = FA(), F = FS(); if (!A || !F) return cloudUi();
+  try {
+    let u = (await A.getCurrentUser()).user;
+    if (!u) try { u = (await (platform() === 'ios' ? A.signInWithGameCenter() : A.signInWithPlayGames())).user } catch {}
+    if (!u) u = (await A.signInAnonymously()).user;
+    cloudUid = u?.uid;
+    if (cloudUid) {
+      const d = (await F.getDocument({reference: 'saves/' + cloudUid})).snapshot?.data;
+      if (d?.save && (fresh || d.updatedAt > (S.syncedAt || 0))) { mergeSave(JSON.parse(d.save)); lang = S.lang || lang; applyLang(); ui() }
+      await cloudPush();
+    }
+  } catch {}
+  cloudUi();
+}
+function mergeSave(R){ // la version distante gagne, sans jamais perdre d'achat ni de succès
+  const uni = k => [...new Set([...(S[k] || []), ...(R[k] || [])])];
+  const keep = {granted: uni('granted'), owned: uni('owned'), ach: uni('ach'), xp: Math.max(S.xp, R.xp || 0), noAds: S.noAds || !!R.noAds || uni('granted').includes('stacksnap_noads')};
+  S = Object.assign(clone(DEF), R, keep); for (const k of ['inv', 'stats', 'passClaimed']) S[k] = Object.assign(clone(DEF[k]), S[k]);
+  lastSig = ''; save();
+}
+async function cloudPush(){
+  const F = FS(); if (!F || !cloudUid) return;
+  try { const now = Date.now(); await F.setDocument({reference: 'saves/' + cloudUid, data: {save: JSON.stringify(S), updatedAt: now}});
+    S.syncedAt = now; localStorage.setItem('ss_save', JSON.stringify(S)) } catch {}
+  cloudUi();
+}
+function cloudUi(){ const el = document.getElementById('cloudTxt'); if (el) el.textContent = t('cloud') + ' : ' + t(cloudUid ? 'synced' : 'offline') }
 
 // ---------- Langues
 let lang = S.lang || (navigator.language || 'en').slice(0, 2); if (!I18N[lang]) lang = 'en';
@@ -167,7 +206,7 @@ async function scheduleNotifs(){
     await L.schedule({notifications: n});
   } catch {}
 }
-document.addEventListener('visibilitychange', () => { if (document.hidden) scheduleNotifs() });
+document.addEventListener('visibilitychange', () => { if (document.hidden) { scheduleNotifs(); clearTimeout(cloudTimer); cloudPush() } });
 
 // ---------- Toasts (file d'attente)
 const toastQ = []; let toastOn = false;
@@ -596,7 +635,7 @@ $('claim').onclick = () => claimChest(1);
 $('claim2').onclick = () => claimChest(2);
 // Options
 $('oLang').innerHTML = Object.entries(I18N).map(([k, v]) => `<option value="${k}">${v._}</option>`).join('');
-$('optBtn').onclick = () => { $('oSnd').checked = !S.mute; $('oVol').value = S.vol; $('oVib').checked = !S.noVib; $('oNotif').checked = S.notif; $('oLang').value = lang; $('code').value = ''; open('opts') };
+$('optBtn').onclick = () => { $('oSnd').checked = !S.mute; $('oVol').value = S.vol; $('oVib').checked = !S.noVib; $('oNotif').checked = S.notif; $('oLang').value = lang; $('code').value = ''; cloudUi(); open('opts') };
 $('oSnd').onchange = e => { S.mute = !e.target.checked; save(); sfx.drop() };
 $('oVol').onchange = e => { S.vol = +e.target.value; save(); sfx.drop() };
 $('oVib').onchange = e => { S.noVib = !e.target.checked; save(); vibrate(30) };
@@ -621,6 +660,6 @@ const qp = new URLSearchParams(location.search);
 if (qp.has('c')) newGame('challenge', {seed: +qp.get('c'), target: +qp.get('s') || 0}); else newGame('classic');
 requestAnimationFrame(frame);
 if (S.last !== today()) setTimeout(() => { renderChest(); open('chest') }, 500);
-initIAP(); initAds(); scheduleNotifs(); track('app_open');
+initIAP(); initAds(); scheduleNotifs(); cloudInit(); track('app_open');
 if ('serviceWorker' in navigator && !native() && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 })();
