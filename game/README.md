@@ -34,5 +34,21 @@ Le plugin `@capacitor-community/admob` est utilisé automatiquement dans l'app n
 3. iOS : dans `ios/App/App/Info.plist`, ajoutez `GADApplicationIdentifier` = votre App ID.
 4. Remplacez les IDs de test dans `AD_IDS` (`www/index.html`) par vos IDs de production.
 
-## Prochaines étapes
-Achat « sans pub », classement (Game Center / Play Games), icône et écran de lancement (`npx @capacitor/assets generate`).
+## Achat « Sans pub » (cordova-plugin-purchase)
+1. Créez un produit **non consommable** `stacksnap_noads` dans App Store Connect et dans la Play Console.
+2. Il supprime les pubs interstitielles (1 toutes les 3 parties) et donne les récompenses sans regarder de pub.
+3. Le bouton « Restaurer les achats » est obligatoire pour la validation Apple (déjà présent).
+
+## Classement mondial (@openforge/capacitor-game-connect)
+- iOS : activez Game Center dans Xcode et créez le classement `stacksnap.highscore` dans App Store Connect.
+- Android : créez un classement dans Play Games Services, puis remplacez `REMPLACER_PAR_ID_PLAY_GAMES` dans `www/index.html`.
+- Hors application native, le jeu affiche un top 10 local.
+
+## Icône et écran de lancement
+Les fichiers sources sont `assets/icon.svg`, `assets/icon-only.png` et `assets/splash.png`. Ensuite :
+```
+npm run assets && npm run sync
+```
+
+## Web / PWA
+`manifest.json` et `sw.js` rendent la version web installable et jouable hors ligne.

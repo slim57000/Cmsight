@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#1b1830">
 <title>Stack & Snap</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-512.png">
 <style>
 :root{--bg:#1b1830;--panel:#2a2548;--txt:#f4f1ff;--mut:#a9a2cc;--acc:#ffcf5c}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
@@ -15,6 +17,9 @@ header{display:flex;justify-content:space-between;align-items:center;padding:12p
 .stat small{display:block;font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em}
 .stat b{font-size:20px}
 button{font:inherit;border:0;border-radius:12px;padding:10px 14px;background:var(--panel);color:var(--txt);cursor:pointer}
+button:disabled{opacity:.4}
+#top{text-align:left;margin:0;padding-left:24px}#top small{color:var(--mut)}
+@media (max-width:380px){#next>span{display:none}#next{gap:6px}}
 button.primary{background:var(--acc);color:#2a2000;font-weight:700}
 #next{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px;color:var(--mut);font-size:13px;min-height:44px}
 #next canvas{width:36px;height:36px}
@@ -44,7 +49,7 @@ button.primary{background:var(--acc);color:#2a2000;font-weight:700}
     <button id="mode"></button>
     <div class="stat"><small data-i="best"></small><b id="best">0</b></div>
   </header>
-  <div id="next"><span data-i="next"></span> <canvas id="n1" width="72" height="72"></canvas><canvas id="n2" width="72" height="72" style="opacity:.5;width:28px;height:28px"></canvas><button id="ham" style="padding:6px 10px">🔨 1</button><button id="menuBtn" style="padding:6px 10px">🪙 <span id="coinsTop">0</span></button><button id="optBtn" aria-label="Options" style="padding:6px 10px">⚙️</button></div>
+  <div id="next"><span data-i="next"></span> <canvas id="n1" width="72" height="72"></canvas><canvas id="n2" width="72" height="72" style="opacity:.5;width:28px;height:28px"></canvas><button id="ham" style="padding:6px 10px">🔨 1</button><button id="undo" style="padding:6px 10px">↩️ 1</button><button id="menuBtn" style="padding:6px 10px">🪙 <span id="coinsTop">0</span></button><button id="optBtn" aria-label="Options" style="padding:6px 10px">⚙️</button></div>
   <div id="board"><canvas id="c"></canvas><div id="combo"></div></div>
 </div>
 <div id="over" class="modal"><div class="card">
@@ -56,8 +61,12 @@ button.primary{background:var(--acc);color:#2a2000;font-weight:700}
 </div></div>
 <div id="menu" class="modal"><div class="card">
   <h2>🪙 <span id="coins">0</span></h2>
+  <p id="streak"></p>
   <h3 data-i="missions"></h3><div id="missions"></div>
   <h3 data-i="skins"></h3><div id="skins"></div>
+  <h3 data-i="shop"></h3><div class="row"><button class="primary" id="noads"></button><button id="restore" data-i="restore"></button></div>
+  <h3 data-i="top"></h3><ol id="top"></ol><button id="gc" data-i="leaderboard" style="margin-top:8px"></button>
+  <h3 data-i="stats"></h3><div id="stats" style="margin-bottom:16px"></div>
   <button class="primary" id="closeMenu" data-i="close"></button>
 </div></div>
 <div id="opts" class="modal"><div class="card">
@@ -74,7 +83,7 @@ const COLS = 5, ROWS = 7;
 const $ = id => document.getElementById(id);
 const cv = $('c'), ctx = cv.getContext('2d');
 let grid, cur, nxt, score, maxLv, busy, over, rng, daily = false, hoverCol = -1, cell = 60, dpr = 1;
-let fx = [], gs, hams, nextHam, hamMode, continued, startBest;
+let undos, snap, fx = [], gs, hams, nextHam, hamMode, continued, startBest;
 
 const store = {
   get(k){ try { return +localStorage.getItem(k) || 0 } catch { return 0 } },
@@ -93,6 +102,7 @@ const I18N = {
     choose: 'Choisir', notenough: 'Pas assez 🪙', hint1: 'Touchez une colonne pour lâcher la tuile', hint2: 'Les tuiles identiques fusionnent !',
     hamhint: '🔨 Touchez une tuile à casser', besttile: 'Score {0} · meilleure tuile {1}', sharetxt: "J'ai fait {0} points sur Stack & Snap ! Tu fais mieux ?",
     options: 'Options', sound: 'Son', volume: 'Volume', vibration: 'Vibrations', language: 'Langue',
+    shop: 'Boutique', noads: '🚫 Supprimer les pubs', noadsOk: '✅ Sans pub', restore: 'Restaurer les achats', top: 'Meilleurs scores', leaderboard: '🏆 Classement mondial', stats: 'Statistiques', st_games: 'Parties jouées', st_tile: 'Meilleure tuile', st_merges: 'Fusions', streak: '🔥 Série de {0} jour(s) ! +{1} 🪙', streakInfo: '🔥 Série : {0} jour(s)',
     sk: ['Classique', 'Bonbons', 'Néon', 'Or & Nuit']},
   en: {_: 'English', score: 'Score', best: 'Best', classic: 'Classic', daily: 'Daily challenge', next: 'Next', over: 'Game over',
     newbest: '🏆 New record!', cont: 'Continue', again: 'Play again', share: 'Share', dbl: '📺 Double coins', missions: 'Daily missions',
@@ -101,6 +111,7 @@ const I18N = {
     choose: 'Select', notenough: 'Not enough 🪙', hint1: 'Tap a column to drop the tile', hint2: 'Matching tiles merge!',
     hamhint: '🔨 Tap a tile to smash', besttile: 'Score {0} · best tile {1}', sharetxt: 'I scored {0} points in Stack & Snap! Can you beat it?',
     options: 'Settings', sound: 'Sound', volume: 'Volume', vibration: 'Vibration', language: 'Language',
+    shop: 'Shop', noads: '🚫 Remove ads', noadsOk: '✅ Ad-free', restore: 'Restore purchases', top: 'Top scores', leaderboard: '🏆 Global leaderboard', stats: 'Statistics', st_games: 'Games played', st_tile: 'Best tile', st_merges: 'Merges', streak: '🔥 {0}-day streak! +{1} 🪙', streakInfo: '🔥 Streak: {0} day(s)',
     sk: ['Classic', 'Candy', 'Neon', 'Gold & Night']},
   es: {_: 'Español', score: 'Puntos', best: 'Récord', classic: 'Clásico', daily: 'Reto diario', next: 'Siguiente', over: 'Fin de la partida',
     newbest: '🏆 ¡Nuevo récord!', cont: 'Continuar', again: 'Otra vez', share: 'Compartir', dbl: '📺 Doblar monedas', missions: 'Misiones diarias',
@@ -109,6 +120,7 @@ const I18N = {
     choose: 'Elegir', notenough: 'Faltan 🪙', hint1: 'Toca una columna para soltar la ficha', hint2: '¡Las fichas iguales se fusionan!',
     hamhint: '🔨 Toca una ficha para romperla', besttile: 'Puntos {0} · mejor ficha {1}', sharetxt: '¡Hice {0} puntos en Stack & Snap! ¿Me superas?',
     options: 'Opciones', sound: 'Sonido', volume: 'Volumen', vibration: 'Vibración', language: 'Idioma',
+    shop: 'Tienda', noads: '🚫 Quitar anuncios', noadsOk: '✅ Sin anuncios', restore: 'Restaurar compras', top: 'Mejores puntuaciones', leaderboard: '🏆 Clasificación mundial', stats: 'Estadísticas', st_games: 'Partidas jugadas', st_tile: 'Mejor ficha', st_merges: 'Fusiones', streak: '🔥 ¡Racha de {0} día(s)! +{1} 🪙', streakInfo: '🔥 Racha: {0} día(s)',
     sk: ['Clásico', 'Caramelo', 'Neón', 'Oro y Noche']},
   de: {_: 'Deutsch', score: 'Punkte', best: 'Rekord', classic: 'Klassisch', daily: 'Tagesaufgabe', next: 'Nächste', over: 'Spiel vorbei',
     newbest: '🏆 Neuer Rekord!', cont: 'Weiter', again: 'Nochmal', share: 'Teilen', dbl: '📺 Münzen verdoppeln', missions: 'Tägliche Missionen',
@@ -117,6 +129,7 @@ const I18N = {
     choose: 'Wählen', notenough: 'Zu wenig 🪙', hint1: 'Tippe auf eine Spalte, um das Plättchen fallen zu lassen', hint2: 'Gleiche Plättchen verschmelzen!',
     hamhint: '🔨 Tippe auf ein Plättchen zum Zerschlagen', besttile: 'Punkte {0} · bestes Plättchen {1}', sharetxt: 'Ich habe {0} Punkte in Stack & Snap! Schaffst du mehr?',
     options: 'Einstellungen', sound: 'Ton', volume: 'Lautstärke', vibration: 'Vibration', language: 'Sprache',
+    shop: 'Shop', noads: '🚫 Werbung entfernen', noadsOk: '✅ Werbefrei', restore: 'Käufe wiederherstellen', top: 'Bestenliste', leaderboard: '🏆 Weltrangliste', stats: 'Statistik', st_games: 'Gespielte Spiele', st_tile: 'Bestes Plättchen', st_merges: 'Verschmelzungen', streak: '🔥 {0}-Tage-Serie! +{1} 🪙', streakInfo: '🔥 Serie: {0} Tag(e)',
     sk: ['Klassisch', 'Bonbons', 'Neon', 'Gold & Nacht']},
 };
 const raw = (k, d) => { try { const v = localStorage.getItem(k); return v === null ? d : v } catch { return d } };
@@ -162,13 +175,44 @@ const skin = () => SKINS.find(k => k.id === skinId) || SKINS[0];
 const color = lv => skin().col(lv);
 // Publicités récompensées : AdMob en natif (Capacitor), simulées sur le web
 const AD_IDS = {android: 'ca-app-pub-3940256099942544/5224354917', ios: 'ca-app-pub-3940256099942544/1712485313'}; // IDs de test Google
+const AD_INTER = {android: 'ca-app-pub-3940256099942544/1033173712', ios: 'ca-app-pub-3940256099942544/4411468910'};
+const native = () => !!window.Capacitor?.isNativePlatform?.();
+let noAds = raw('ss_noads', '0') === '1';
 const ads = {
+  async interstitial(){
+    const C = window.Capacitor, A = C?.Plugins?.AdMob; if (noAds || !A || !native()) return;
+    try { await A.initialize(); await A.prepareInterstitial({adId: AD_INTER[C.getPlatform()]}); await A.showInterstitial() } catch {}
+  },
   async rewarded(){
     const C = window.Capacitor, A = C?.Plugins?.AdMob;
-    if (!A || !C.isNativePlatform?.()) { await sleep(300); return true }
+    if (noAds || !A || !native()) { await sleep(300); return true }
     try { await A.initialize(); await A.prepareRewardVideoAd({adId: AD_IDS[C.getPlatform()]}); return !!(await A.showRewardVideoAd()) } catch { return false }
   }
 };
+// Achat intégré « Sans pub » (cordova-plugin-purchase), simulé sur le web
+const IAP_ID = 'stacksnap_noads';
+function initIAP(){
+  const P = window.CdvPurchase; if (!P || !native() || initIAP.done) return; initIAP.done = true;
+  const {store: st, ProductType, Platform} = P, pf = window.Capacitor.getPlatform() === 'ios' ? Platform.APPLE_APPSTORE : Platform.GOOGLE_PLAY;
+  st.register([{id: IAP_ID, type: ProductType.NON_CONSUMABLE, platform: pf}]);
+  st.when().approved(tx => tx.verify()).verified(rc => rc.finish()).productUpdated(pr => { if (pr.id === IAP_ID && pr.owned) setNoAds() });
+  st.initialize([pf]);
+}
+document.addEventListener('deviceready', initIAP);
+function setNoAds(){ noAds = true; store.set('ss_noads', 1); if ($('menu').style.display === 'flex') renderMenu() }
+// Classement mondial : Game Center (iOS) / Play Games (Android) via @openforge/capacitor-game-connect
+const GC = () => native() && window.Capacitor.Plugins?.CapacitorGameConnect;
+const LB_ID = () => window.Capacitor?.getPlatform() === 'ios' ? 'stacksnap.highscore' : 'REMPLACER_PAR_ID_PLAY_GAMES';
+async function gcSubmit(sc){ try { const g = GC(); if (g) { await g.signIn(); await g.submitScore({leaderboardID: LB_ID(), totalScoreAmount: sc}) } } catch {} }
+let stats = store.json('ss_stats', {games: 0, tile: 1, merges: 0}), top = store.json('ss_top', []), streak = +raw('ss_streak', 0);
+function dailyLogin(){
+  const last = raw('ss_last', ''), yest = new Date(Date.now() - 864e5).toISOString().slice(0, 10);
+  if (last === today()) return;
+  streak = last === yest ? streak + 1 : 1;
+  const bonus = Math.min(streak, 7) * 10; coins += bonus;
+  store.set('ss_last', today()); store.set('ss_streak', streak); save();
+  setTimeout(() => toast(t('streak', streak, bonus)), 600);
+}
 // Missions du jour : 3 missions tirées de la date, identiques pour tous
 const MISSIONS = {
   tile:   (g) => [t('m_tile', label(g)), () => maxLv],
@@ -192,9 +236,15 @@ function checkMissions(){
 function save(){
   store.set('ss_coins', coins); store.set('ss_owned', JSON.stringify(owned));
   store.set('ss_skin', skinId); store.set('ss_ms', JSON.stringify(ms));
+  store.set('ss_stats', JSON.stringify(stats)); store.set('ss_top', JSON.stringify(top));
 }
 function renderMenu(){
-  $('coins').textContent = coins;
+  $('coins').textContent = coins; $('streak').textContent = t('streakInfo', streak);
+  $('noads').textContent = t(noAds ? 'noadsOk' : 'noads'); $('noads').disabled = noAds;
+  $('top').innerHTML = top.map(x => `<li>${x.s} <small>${x.d}</small></li>`).join('') || '<li>—</li>';
+  $('gc').style.display = GC() ? '' : 'none';
+  $('stats').innerHTML = [[t('st_games'), stats.games], [t('st_tile'), label(stats.tile)], [t('st_merges'), stats.merges]]
+    .map(([a, b]) => `<div class="mi"><span>${a}</span><b>${b}</b></div>`).join('');
   $('missions').innerHTML = ms.list.map(m => { const [txt, val] = MISSIONS[m.t](m.g);
     return `<div class="mi ${m.done ? 'done' : ''}"><span>${txt}</span><b>${m.done ? '✅' : (m.t === 'tile' ? label(Math.min(val(), m.g)) + '/' + label(m.g) : Math.min(val(), m.g) + '/' + m.g) + ' · +' + m.r + '🪙'}</b></div>` }).join('');
   $('skins').innerHTML = SKINS.map((k, i) => `<button class="sk ${k.id === skinId ? 'on' : ''}" data-k="${k.id}"><i style="background:${k.col(3)};border-radius:${k.r/2}px"></i>${I18N[lang].sk[i]}<small>${owned.includes(k.id) ? t(k.id === skinId ? 'equipped' : 'choose') : k.price + ' 🪙'}</small></button>`).join('');
@@ -209,7 +259,7 @@ function newGame(){
   grid = Array.from({length: COLS}, () => []);
   rng = daily ? mulberry(seed(today())) : Math.random;
   score = 0; maxLv = 3; busy = false; over = false;
-  fx = []; gs = {combo: 0}; hams = 1; nextHam = 1500; hamMode = false; continued = false; startBest = store.get(bestKey());
+  fx = []; gs = {combo: 0}; hams = 1; nextHam = 1500; undos = 1; snap = null; hamMode = false; continued = false; startBest = store.get(bestKey());
   cur = randLv(); nxt = randLv();
   $('over').style.display = 'none';
   applyLang();
@@ -223,6 +273,7 @@ function ui(){
   loadMissions(); checkMissions();
   $('coinsTop').textContent = coins;
   document.documentElement.style.setProperty('--bg', `hsl(${(250 + (maxLv - 3) * 23) % 360} 32% 14%)`);
+  $('undo').textContent = '↩️ ' + undos; $('undo').disabled = !undos || !snap || busy;
   $('ham').textContent = '🔨 ' + hams; $('ham').classList.toggle('on', hamMode);
   drawTile($('n1').getContext('2d'), cur); drawTile($('n2').getContext('2d'), nxt);
 }
@@ -236,9 +287,16 @@ function rrect(g,x,y,w,h,r,fill){ g.beginPath(); g.roundRect ? g.roundRect(x,y,w
 function neighbors(c, r){
   return [[c-1,r],[c+1,r],[c,r-1],[c,r+1]].filter(([x,y]) => grid[x] && grid[x][y]);
 }
+function snapshot(){ snap = {g: grid.map(col => col.map(t => t.lv)), cur, nxt, score, maxLv, hams, nextHam} }
+function undo(){
+  if (busy || over || !undos || !snap) return;
+  undos--; ({cur, nxt, score, maxLv, hams, nextHam} = snap);
+  grid = snap.g.map(col => col.map((lv, i) => ({lv, vy: i, s: 1.2, fresh: false})));
+  snap = null; tone(520, .15, 'sine', .15, .6); ui();
+}
 async function drop(c){
   if (busy || over) return;
-  busy = true;
+  busy = true; snapshot();
   grid[c].push({lv: cur, vy: ROWS + .5, s: 1, fresh: true});
   cur = nxt; nxt = randLv(); ui(); vibrate(8); sfx.drop();
   await sleep(140);
@@ -263,7 +321,7 @@ async function resolve(){
     const before = new Map(); grid.forEach(col => col.forEach((t,i) => before.set(t,i)));
     target.lv += group.length - 1; target.s = 1.35;
     if (target.lv > maxLv && target.lv >= 6) toast(t('newtile', label(target.lv)));
-    maxLv = Math.max(maxLv, target.lv); gs.combo = Math.max(gs.combo, combo); ms.merges++;
+    maxLv = Math.max(maxLv, target.lv); gs.combo = Math.max(gs.combo, combo); ms.merges++; stats.merges++;
     score += 2 ** target.lv * combo;
     const dead = new Set(group.filter(t => t !== target));
     for (let c = 0; c < COLS; c++) grid[c] = grid[c].filter(t => !dead.has(t));
@@ -285,7 +343,7 @@ function burst(x, y, col, txt){
 async function smash(e){
   const b = cv.getBoundingClientRect(), c = colAt(e), rw = Math.floor((b.bottom - e.clientY) / (b.height / (ROWS+1)));
   if (busy || !grid[c][rw]) return;
-  busy = true; hamMode = false; hams--;
+  snapshot(); busy = true; hamMode = false; hams--;
   const t = grid[c][rw]; burst(c*cell + cell/2, cell*(ROWS+1) - (rw+.5)*cell, color(t.lv));
   grid[c].splice(rw, 1); grid[c].forEach((t, i) => t.fresh = i >= rw);
   tone(120, .2, 'sawtooth', .15, .4); vibrate(30); ui();
@@ -301,6 +359,9 @@ function end(){
   over = true; busy = false; hamMode = false; ui();
   $('newbest').style.display = score > startBest && startBest > 0 ? 'block' : 'none';
   $('cont').style.display = continued ? 'none' : '';
+  stats.games++; stats.tile = Math.max(stats.tile, maxLv);
+  top = [...top, {s: score, d: today()}].sort((a, b) => b.s - a.s).slice(0, 10);
+  gcSubmit(score); if (stats.games % 3 === 0) setTimeout(() => ads.interstitial(), 900);
   const earned = Math.floor(score / 20); coins += earned; save(); ui();
   $('earn').textContent = `+${earned} 🪙`; $('dbl').style.display = earned ? '' : 'none'; $('dbl').dataset.n = earned; vibrate([40,60,80]); sfx.over();
   $('ovtxt').textContent = t('besttile', score, label(maxLv)) + (daily ? ' · ' + t('daily') : '');
@@ -319,7 +380,8 @@ function frame(){
   const W = cell*COLS, H = cell*(ROWS+1);
   ctx.clearRect(0,0,W,H);
   // zone de danger (ligne du haut)
-  ctx.fillStyle = '#ff5c7a22'; ctx.fillRect(0,0,W,cell);
+  const danger = grid.some(col => col.length >= ROWS - 1), pulse = danger ? .18 + .12 * Math.sin(Date.now() / 140) : .13;
+  ctx.fillStyle = `rgba(255,92,122,${pulse})`; ctx.fillRect(0,0,W,cell);
   ctx.strokeStyle = '#ff5c7a'; ctx.setLineDash([6,6]); ctx.beginPath(); ctx.moveTo(0,cell); ctx.lineTo(W,cell); ctx.stroke(); ctx.setLineDash([]);
   for (let c = 0; c < COLS; c++) {
     rrect(ctx, c*cell+3, cell+3, cell-6, H-cell-6, 10, c === hoverCol && !busy ? '#ffffff14' : '#ffffff08');
@@ -333,6 +395,8 @@ function frame(){
       ctx.fillText(L, c*cell + cell/2, y + cell/2 + 1);
     });
   }
+  if (hoverCol >= 0 && !busy && !over && !hamMode) { ctx.globalAlpha = .35;
+    rrect(ctx, hoverCol*cell+4, 4, cell-8, cell-8, skin().r*cell/60, color(cur)); ctx.globalAlpha = 1 }
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   fx = fx.filter(p => (p.life -= .025) > 0);
   for (const p of fx) {
@@ -367,6 +431,10 @@ $('closeMenu').onclick = () => $('menu').style.display = 'none';
 $('skins').onclick = e => { const b = e.target.closest('[data-k]'); if (!b) return; const k = SKINS.find(s => s.id === b.dataset.k);
   if (!owned.includes(k.id)) { if (coins < k.price) { b.querySelector('small').textContent = t('notenough'); return } coins -= k.price; owned.push(k.id); tone(784, .2) }
   skinId = k.id; save(); renderMenu(); ui() };
+$('undo').onclick = undo;
+$('noads').onclick = async () => { const P = window.CdvPurchase; if (P && native()) P.store.get(IAP_ID)?.getOffer()?.order(); else { await sleep(300); setNoAds() } };
+$('restore').onclick = () => { try { window.CdvPurchase?.store.restorePurchases() } catch {} };
+$('gc').onclick = async () => { try { const g = GC(); await g.signIn(); await g.showLeaderboard({leaderboardID: LB_ID()}) } catch {} };
 $('ham').onclick = () => { if (busy || over || !hams) return; hamMode = !hamMode; ui() };
 $('mode').onclick = () => { if (busy) return; daily = !daily; newGame() };
 $('share').onclick = async () => {
@@ -374,7 +442,8 @@ $('share').onclick = async () => {
   try { if (navigator.share) await navigator.share({text}); else { await navigator.clipboard.writeText(text); $('share').textContent = t('copied') } } catch {}
 };
 addEventListener('resize', resize);
-resize(); newGame(); frame();
+resize(); newGame(); frame(); dailyLogin(); ui(); initIAP();
+if ('serviceWorker' in navigator && !native() && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 })();
 </script>
 </body>

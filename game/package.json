@@ -6,15 +6,19 @@
     "serve": "npx http-server www -p 8080",
     "sync": "npx cap sync",
     "android": "npx cap open android",
-    "ios": "npx cap open ios"
+    "ios": "npx cap open ios",
+    "assets": "npx capacitor-assets generate --iconBackgroundColor \"#1b1830\" --splashBackgroundColor \"#1b1830\""
   },
   "dependencies": {
     "@capacitor/android": "^6.0.0",
     "@capacitor/core": "^6.0.0",
     "@capacitor/ios": "^6.0.0",
-    "@capacitor-community/admob": "^6.0.0"
+    "@capacitor-community/admob": "^6.0.0",
+    "cordova-plugin-purchase": "^13.0.0",
+    "@openforge/capacitor-game-connect": "^6.0.0"
   },
   "devDependencies": {
-    "@capacitor/cli": "^6.0.0"
+    "@capacitor/cli": "^6.0.0",
+    "@capacitor/assets": "^3.0.0"
   }
 }
