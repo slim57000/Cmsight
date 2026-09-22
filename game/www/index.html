@@ -12,7 +12,10 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
 html,body{transition:background 1.2s;margin:0;height:100%;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden;touch-action:manipulation}
 #app{display:flex;flex-direction:column;height:100%;padding:env(safe-area-inset-top) 16px env(safe-area-inset-bottom)}
-#topbar{display:flex;justify-content:flex-end;padding-top:10px}#optBtn{padding:8px 12px;font-size:18px}
+#topbar{display:flex;justify-content:flex-end;gap:8px;padding-top:10px}#optBtn,#shopBtn{padding:8px 12px;font-size:18px}
+.item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #ffffff12;text-align:left}
+.item small{display:block;color:var(--mut);font-size:12px}.item button{padding:8px 12px;white-space:nowrap;background:#ffffff18}.item button.primary{background:var(--acc)}
+.item.best{background:#ffcf5c14;border-radius:12px;padding:10px;border:1px solid #ffcf5c55}.tag{display:block;color:var(--acc);font-size:11px;font-weight:700;text-transform:uppercase}
 header{display:flex;justify-content:space-between;align-items:center;padding:14px 0 6px;gap:8px}
 .stat{background:var(--panel);border-radius:12px;padding:6px 12px;min-width:84px;text-align:center}
 .stat small{display:block;font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em}
@@ -45,7 +48,7 @@ button.primary{background:var(--acc);color:#2a2000;font-weight:700}
 </head>
 <body>
 <div id="app">
-  <div id="topbar"><button id="optBtn" aria-label="Options">⚙️</button></div>
+  <div id="topbar"><button id="shopBtn" aria-label="Shop">🛒</button><button id="optBtn" aria-label="Options">⚙️</button></div>
   <header>
     <div class="stat"><small data-i="score"></small><b id="score">0</b></div>
     <button id="mode"></button>
@@ -66,10 +69,15 @@ button.primary{background:var(--acc);color:#2a2000;font-weight:700}
   <p id="streak"></p>
   <h3 data-i="missions"></h3><div id="missions"></div>
   <h3 data-i="skins"></h3><div id="skins"></div>
-  <h3 data-i="shop"></h3><div class="row"><button class="primary" id="noads"></button><button id="restore" data-i="restore"></button></div>
   <h3 data-i="top"></h3><ol id="top"></ol><button id="gc" data-i="leaderboard" style="margin-top:8px"></button>
   <h3 data-i="stats"></h3><div id="stats" style="margin-bottom:16px"></div>
   <button class="primary" id="closeMenu" data-i="close"></button>
+</div></div>
+<div id="shop" class="modal"><div class="card">
+  <h2>🛒 <span data-i="shop"></span></h2><p>🪙 <span id="shopCoins">0</span> · 🔨 <span id="invHam">0</span> · ↩️ <span id="invUndo">0</span></p>
+  <h3 data-i="premium"></h3><div id="iap"></div>
+  <h3 data-i="withcoins"></h3><div id="coinshop"></div>
+  <div class="row" style="margin-top:16px"><button id="restore" data-i="restore"></button><button class="primary" id="closeShop" data-i="close"></button></div>
 </div></div>
 <div id="opts" class="modal"><div class="card">
   <h2 data-i="options"></h2>
@@ -105,6 +113,7 @@ const I18N = {
     hamhint: '🔨 Touchez une tuile à casser', besttile: 'Score {0} · meilleure tuile {1}', sharetxt: "J'ai fait {0} points sur Stack & Snap ! Tu fais mieux ?",
     options: 'Options', sound: 'Son', volume: 'Volume', vibration: 'Vibrations', language: 'Langue',
     shop: 'Boutique', noads: '🚫 Supprimer les pubs', noadsOk: '✅ Sans pub', restore: 'Restaurer les achats', top: 'Meilleurs scores', leaderboard: '🏆 Classement mondial', stats: 'Statistiques', st_games: 'Parties jouées', st_tile: 'Meilleure tuile', st_merges: 'Fusions', streak: '🔥 Série de {0} jour(s) ! +{1} 🪙', streakInfo: '🔥 Série : {0} jour(s)',
+    premium: 'Offres', withcoins: 'Avec des pièces', p_coins: '{0} pièces', p_starter: '⭐ Pack de démarrage', p_starter_d: '1000 🪙 + 5 🔨 + 5 ↩️ · une seule fois', p_noads_d: 'Plus de pubs entre les parties', buy_ham: '3 marteaux 🔨', buy_undo: '3 annulations ↩️', bought: '🎉 Merci pour votre achat !', owned: 'Acheté', best_value: 'Meilleure offre',
     sk: ['Classique', 'Bonbons', 'Néon', 'Or & Nuit']},
   en: {_: 'English', score: 'Score', best: 'Best', classic: 'Classic', daily: 'Daily challenge', next: 'Next', over: 'Game over',
     newbest: '🏆 New record!', cont: 'Continue', again: 'Play again', share: 'Share', dbl: '📺 Double coins', missions: 'Daily missions',
@@ -114,6 +123,7 @@ const I18N = {
     hamhint: '🔨 Tap a tile to smash', besttile: 'Score {0} · best tile {1}', sharetxt: 'I scored {0} points in Stack & Snap! Can you beat it?',
     options: 'Settings', sound: 'Sound', volume: 'Volume', vibration: 'Vibration', language: 'Language',
     shop: 'Shop', noads: '🚫 Remove ads', noadsOk: '✅ Ad-free', restore: 'Restore purchases', top: 'Top scores', leaderboard: '🏆 Global leaderboard', stats: 'Statistics', st_games: 'Games played', st_tile: 'Best tile', st_merges: 'Merges', streak: '🔥 {0}-day streak! +{1} 🪙', streakInfo: '🔥 Streak: {0} day(s)',
+    premium: 'Offers', withcoins: 'With coins', p_coins: '{0} coins', p_starter: '⭐ Starter pack', p_starter_d: '1000 🪙 + 5 🔨 + 5 ↩️ · one time only', p_noads_d: 'No more ads between games', buy_ham: '3 hammers 🔨', buy_undo: '3 undos ↩️', bought: '🎉 Thanks for your purchase!', owned: 'Owned', best_value: 'Best value',
     sk: ['Classic', 'Candy', 'Neon', 'Gold & Night']},
   es: {_: 'Español', score: 'Puntos', best: 'Récord', classic: 'Clásico', daily: 'Reto diario', next: 'Siguiente', over: 'Fin de la partida',
     newbest: '🏆 ¡Nuevo récord!', cont: 'Continuar', again: 'Otra vez', share: 'Compartir', dbl: '📺 Doblar monedas', missions: 'Misiones diarias',
@@ -123,6 +133,7 @@ const I18N = {
     hamhint: '🔨 Toca una ficha para romperla', besttile: 'Puntos {0} · mejor ficha {1}', sharetxt: '¡Hice {0} puntos en Stack & Snap! ¿Me superas?',
     options: 'Opciones', sound: 'Sonido', volume: 'Volumen', vibration: 'Vibración', language: 'Idioma',
     shop: 'Tienda', noads: '🚫 Quitar anuncios', noadsOk: '✅ Sin anuncios', restore: 'Restaurar compras', top: 'Mejores puntuaciones', leaderboard: '🏆 Clasificación mundial', stats: 'Estadísticas', st_games: 'Partidas jugadas', st_tile: 'Mejor ficha', st_merges: 'Fusiones', streak: '🔥 ¡Racha de {0} día(s)! +{1} 🪙', streakInfo: '🔥 Racha: {0} día(s)',
+    premium: 'Ofertas', withcoins: 'Con monedas', p_coins: '{0} monedas', p_starter: '⭐ Pack inicial', p_starter_d: '1000 🪙 + 5 🔨 + 5 ↩️ · solo una vez', p_noads_d: 'Sin anuncios entre partidas', buy_ham: '3 martillos 🔨', buy_undo: '3 deshacer ↩️', bought: '🎉 ¡Gracias por tu compra!', owned: 'Comprado', best_value: 'Mejor oferta',
     sk: ['Clásico', 'Caramelo', 'Neón', 'Oro y Noche']},
   de: {_: 'Deutsch', score: 'Punkte', best: 'Rekord', classic: 'Klassisch', daily: 'Tagesaufgabe', next: 'Nächste', over: 'Spiel vorbei',
     newbest: '🏆 Neuer Rekord!', cont: 'Weiter', again: 'Nochmal', share: 'Teilen', dbl: '📺 Münzen verdoppeln', missions: 'Tägliche Missionen',
@@ -132,6 +143,7 @@ const I18N = {
     hamhint: '🔨 Tippe auf ein Plättchen zum Zerschlagen', besttile: 'Punkte {0} · bestes Plättchen {1}', sharetxt: 'Ich habe {0} Punkte in Stack & Snap! Schaffst du mehr?',
     options: 'Einstellungen', sound: 'Ton', volume: 'Lautstärke', vibration: 'Vibration', language: 'Sprache',
     shop: 'Shop', noads: '🚫 Werbung entfernen', noadsOk: '✅ Werbefrei', restore: 'Käufe wiederherstellen', top: 'Bestenliste', leaderboard: '🏆 Weltrangliste', stats: 'Statistik', st_games: 'Gespielte Spiele', st_tile: 'Bestes Plättchen', st_merges: 'Verschmelzungen', streak: '🔥 {0}-Tage-Serie! +{1} 🪙', streakInfo: '🔥 Serie: {0} Tag(e)',
+    premium: 'Angebote', withcoins: 'Mit Münzen', p_coins: '{0} Münzen', p_starter: '⭐ Starterpaket', p_starter_d: '1000 🪙 + 5 🔨 + 5 ↩️ · nur einmal', p_noads_d: 'Keine Werbung mehr zwischen Spielen', buy_ham: '3 Hämmer 🔨', buy_undo: '3× Rückgängig ↩️', bought: '🎉 Danke für deinen Kauf!', owned: 'Gekauft', best_value: 'Bestes Angebot',
     sk: ['Klassisch', 'Bonbons', 'Neon', 'Gold & Nacht']},
 };
 const raw = (k, d) => { try { const v = localStorage.getItem(k); return v === null ? d : v } catch { return d } };
@@ -196,12 +208,40 @@ const IAP_ID = 'stacksnap_noads';
 function initIAP(){
   const P = window.CdvPurchase; if (!P || !native() || initIAP.done) return; initIAP.done = true;
   const {store: st, ProductType, Platform} = P, pf = window.Capacitor.getPlatform() === 'ios' ? Platform.APPLE_APPSTORE : Platform.GOOGLE_PLAY;
-  st.register([{id: IAP_ID, type: ProductType.NON_CONSUMABLE, platform: pf}]);
-  st.when().approved(tx => tx.verify()).verified(rc => rc.finish()).productUpdated(pr => { if (pr.id === IAP_ID && pr.owned) setNoAds() });
+  st.register(PRODUCTS.map(p => ({id: p.id, type: p.once ? ProductType.NON_CONSUMABLE : ProductType.CONSUMABLE, platform: pf})));
+  st.when().approved(tx => { tx.products.forEach(p => grant(p.id)); tx.finish() })
+    .productUpdated(pr => { if (pr.owned && PRODUCTS.find(p => p.id === pr.id)?.once) grant(pr.id, true) });
   st.initialize([pf]);
 }
 document.addEventListener('deviceready', initIAP);
-function setNoAds(){ noAds = true; store.set('ss_noads', 1); if ($('menu').style.display === 'flex') renderMenu() }
+function setNoAds(){ noAds = true; store.set('ss_noads', 1) }
+// Catalogue : prix réels lus depuis le store en natif, prix indicatifs sur le web
+let inv = store.json('ss_inv', {ham: 0, undo: 0}), granted = store.json('ss_granted', []);
+const PRODUCTS = [
+  {id: 'stacksnap_starter', once: true, best: true, price: '4,99 €', name: () => t('p_starter'), desc: () => t('p_starter_d'), give(){ coins += 1000; inv.ham += 5; inv.undo += 5 }},
+  {id: IAP_ID, once: true, price: '3,99 €', name: () => t('noads'), desc: () => t('p_noads_d'), give: setNoAds},
+  {id: 'stacksnap_coins_500', price: '0,99 €', name: () => t('p_coins', 500), give(){ coins += 500 }},
+  {id: 'stacksnap_coins_1500', price: '2,99 €', name: () => t('p_coins', 1500), give(){ coins += 1500 }},
+  {id: 'stacksnap_coins_5000', price: '7,99 €', name: () => t('p_coins', 5000), give(){ coins += 5000 }},
+];
+const COIN_ITEMS = [
+  {k: 'ham', cost: 200, name: () => t('buy_ham')},
+  {k: 'undo', cost: 200, name: () => t('buy_undo')},
+];
+function grant(id, silent){
+  const p = PRODUCTS.find(x => x.id === id); if (!p || (p.once && granted.includes(id))) return;
+  p.give(); if (p.once) granted.push(id);
+  save(); ui(); if ($('shop').style.display === 'flex') renderShop();
+  if (!silent) { toast(t('bought')); tone(660, .15); tone(880, .15, 'sine', .15, 1, .1); tone(1320, .3, 'sine', .12, 1, .2) }
+}
+function renderShop(){
+  $('shopCoins').textContent = coins; $('invHam').textContent = inv.ham; $('invUndo').textContent = inv.undo;
+  const st = (native() && window.CdvPurchase?.store) || null;
+  $('iap').innerHTML = PRODUCTS.map(p => { const has = p.once && granted.includes(p.id) || (p.id === IAP_ID && noAds);
+    return `<div class="item ${p.best && !has ? 'best' : ''}"><div>${p.best && !has ? `<span class="tag">${t('best_value')}</span>` : ''}<b>${p.name()}</b>${p.desc ? `<small>${p.desc()}</small>` : ''}</div>
+      <button class="primary" data-buy="${p.id}" ${has ? 'disabled' : ''}>${has ? t('owned') : (st?.get(p.id)?.pricing?.price || p.price)}</button></div>` }).join('');
+  $('coinshop').innerHTML = COIN_ITEMS.map(c => `<div class="item"><b>${c.name()}</b><button data-coin="${c.k}" ${coins < c.cost ? 'disabled' : ''}>${c.cost} 🪙</button></div>`).join('');
+}
 // Classement mondial : Game Center (iOS) / Play Games (Android) via @openforge/capacitor-game-connect
 const GC = () => native() && window.Capacitor.Plugins?.CapacitorGameConnect;
 const LB_ID = () => window.Capacitor?.getPlatform() === 'ios' ? 'stacksnap.highscore' : 'REMPLACER_PAR_ID_PLAY_GAMES';
@@ -239,10 +279,10 @@ function save(){
   store.set('ss_coins', coins); store.set('ss_owned', JSON.stringify(owned));
   store.set('ss_skin', skinId); store.set('ss_ms', JSON.stringify(ms));
   store.set('ss_stats', JSON.stringify(stats)); store.set('ss_top', JSON.stringify(top));
+  store.set('ss_inv', JSON.stringify(inv)); store.set('ss_granted', JSON.stringify(granted));
 }
 function renderMenu(){
   $('coins').textContent = coins; $('streak').textContent = t('streakInfo', streak);
-  $('noads').textContent = t(noAds ? 'noadsOk' : 'noads'); $('noads').disabled = noAds;
   $('top').innerHTML = top.map(x => `<li>${x.s} <small>${x.d}</small></li>`).join('') || '<li>—</li>';
   $('gc').style.display = GC() ? '' : 'none';
   $('stats').innerHTML = [[t('st_games'), stats.games], [t('st_tile'), label(stats.tile)], [t('st_merges'), stats.merges]]
@@ -275,8 +315,8 @@ function ui(){
   loadMissions(); checkMissions();
   $('coinsTop').textContent = coins;
   document.documentElement.style.setProperty('--bg', `hsl(${(250 + (maxLv - 3) * 23) % 360} 32% 14%)`);
-  $('undo').textContent = '↩️ ' + undos; $('undo').disabled = !undos || !snap || busy;
-  $('ham').textContent = '🔨 ' + hams; $('ham').classList.toggle('on', hamMode);
+  $('undo').textContent = '↩️ ' + (undos + inv.undo); $('undo').disabled = !(undos + inv.undo) || !snap || busy;
+  $('ham').textContent = '🔨 ' + (hams + inv.ham); $('ham').classList.toggle('on', hamMode);
   drawTile($('n1').getContext('2d'), cur); drawTile($('n2').getContext('2d'), nxt);
 }
 function drawTile(g, lv){
@@ -291,8 +331,8 @@ function neighbors(c, r){
 }
 function snapshot(){ snap = {g: grid.map(col => col.map(t => t.lv)), cur, nxt, score, maxLv, hams, nextHam} }
 function undo(){
-  if (busy || over || !undos || !snap) return;
-  undos--; ({cur, nxt, score, maxLv, hams, nextHam} = snap);
+  if (busy || over || !(undos + inv.undo) || !snap) return;
+  undos ? undos-- : inv.undo--; save(); ({cur, nxt, score, maxLv, hams, nextHam} = snap);
   grid = snap.g.map(col => col.map((lv, i) => ({lv, vy: i, s: 1.2, fresh: false})));
   snap = null; tone(520, .15, 'sine', .15, .6); ui();
 }
@@ -345,7 +385,7 @@ function burst(x, y, col, txt){
 async function smash(e){
   const b = cv.getBoundingClientRect(), c = colAt(e), rw = Math.floor((b.bottom - e.clientY) / (b.height / (ROWS+1)));
   if (busy || !grid[c][rw]) return;
-  snapshot(); busy = true; hamMode = false; hams--;
+  snapshot(); busy = true; hamMode = false; hams ? hams-- : inv.ham--; save();
   const t = grid[c][rw]; burst(c*cell + cell/2, cell*(ROWS+1) - (rw+.5)*cell, color(t.lv));
   grid[c].splice(rw, 1); grid[c].forEach((t, i) => t.fresh = i >= rw);
   tone(120, .2, 'sawtooth', .15, .4); vibrate(30); ui();
@@ -434,10 +474,15 @@ $('skins').onclick = e => { const b = e.target.closest('[data-k]'); if (!b) retu
   if (!owned.includes(k.id)) { if (coins < k.price) { b.querySelector('small').textContent = t('notenough'); return } coins -= k.price; owned.push(k.id); tone(784, .2) }
   skinId = k.id; save(); renderMenu(); ui() };
 $('undo').onclick = undo;
-$('noads').onclick = async () => { const P = window.CdvPurchase; if (P && native()) P.store.get(IAP_ID)?.getOffer()?.order(); else { await sleep(300); setNoAds() } };
+$('shopBtn').onclick = () => { if (busy) return; renderShop(); $('shop').style.display = 'flex' };
+$('closeShop').onclick = () => $('shop').style.display = 'none';
+$('iap').onclick = async e => { const b = e.target.closest('[data-buy]'); if (!b) return; const P = window.CdvPurchase;
+  if (P && native()) P.store.get(b.dataset.buy)?.getOffer()?.order(); else { b.disabled = true; await sleep(400); grant(b.dataset.buy) } };
+$('coinshop').onclick = e => { const b = e.target.closest('[data-coin]'); if (!b) return; const c = COIN_ITEMS.find(x => x.k === b.dataset.coin);
+  if (coins < c.cost) return; coins -= c.cost; inv[c.k] += 3; save(); ui(); renderShop(); tone(784, .2) };
 $('restore').onclick = () => { try { window.CdvPurchase?.store.restorePurchases() } catch {} };
 $('gc').onclick = async () => { try { const g = GC(); await g.signIn(); await g.showLeaderboard({leaderboardID: LB_ID()}) } catch {} };
-$('ham').onclick = () => { if (busy || over || !hams) return; hamMode = !hamMode; ui() };
+$('ham').onclick = () => { if (busy || over || !(hams + inv.ham)) return; hamMode = !hamMode; ui() };
 $('mode').onclick = () => { if (busy) return; daily = !daily; newGame() };
 $('share').onclick = async () => {
   const text = t('sharetxt', score) + (daily ? ` (${t('daily')} ${today()})` : '');
