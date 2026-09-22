@@ -8,7 +8,7 @@
 <style>
 :root{--bg:#1b1830;--panel:#2a2548;--txt:#f4f1ff;--mut:#a9a2cc;--acc:#ffcf5c}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
-html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden;touch-action:manipulation}
+html,body{transition:background 1.2s;margin:0;height:100%;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden;touch-action:manipulation}
 #app{display:flex;flex-direction:column;height:100%;padding:env(safe-area-inset-top) 16px env(safe-area-inset-bottom)}
 header{display:flex;justify-content:space-between;align-items:center;padding:12px 0 6px;gap:8px}
 .stat{background:var(--panel);border-radius:12px;padding:6px 12px;min-width:84px;text-align:center}
@@ -16,17 +16,22 @@ header{display:flex;justify-content:space-between;align-items:center;padding:12p
 .stat b{font-size:20px}
 button{font:inherit;border:0;border-radius:12px;padding:10px 14px;background:var(--panel);color:var(--txt);cursor:pointer}
 button.primary{background:var(--acc);color:#2a2000;font-weight:700}
-#next{display:flex;align-items:center;justify-content:center;gap:10px;color:var(--mut);font-size:13px;min-height:44px}
+#next{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px;color:var(--mut);font-size:13px;min-height:44px}
 #next canvas{width:36px;height:36px}
 #board{flex:1;position:relative;display:flex;align-items:center;justify-content:center;min-height:0}
 #c{touch-action:none}
 #ham.on{background:var(--acc);color:#2a2000}
 #newbest{color:var(--acc);font-weight:800;display:none}
 #combo{position:absolute;top:8px;left:0;right:0;text-align:center;font-weight:800;font-size:28px;color:var(--acc);opacity:0;transition:opacity .2s,transform .2s;pointer-events:none}
-#over{position:fixed;inset:0;background:#0009;display:none;align-items:center;justify-content:center;padding:16px}
-#over .card{background:var(--panel);border-radius:20px;padding:24px;text-align:center;max-width:320px;width:100%}
-#over h2{margin:0 0 8px}#over p{color:var(--mut);margin:4px 0 16px}
-#over .row{display:flex;gap:8px;justify-content:center}
+.modal{position:fixed;inset:0;background:#0009;display:none;align-items:center;justify-content:center;padding:16px}
+.modal .card{max-height:90vh;overflow:auto;background:var(--panel);border-radius:20px;padding:24px;text-align:center;max-width:320px;width:100%}
+.modal h2{margin:0 0 8px}.modal p{color:var(--mut);margin:4px 0 16px}
+.modal .row{flex-wrap:wrap;display:flex;gap:8px;justify-content:center}
+.card h3{margin:16px 0 6px;font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em;text-align:left}
+.mi{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid #ffffff12;text-align:left;font-size:14px}.mi.done{opacity:.5}.mi b{white-space:nowrap}
+#skins{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.sk{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px;background:#ffffff10}.sk.on{outline:2px solid var(--acc)}
+.sk i{width:28px;height:28px;display:block}.sk small{color:var(--mut);font-size:11px}
 </style>
 </head>
 <body>
@@ -36,14 +41,21 @@ button.primary{background:var(--acc);color:#2a2000;font-weight:700}
     <button id="mode">Classique</button>
     <div class="stat"><small>Record</small><b id="best">0</b></div>
   </header>
-  <div id="next">Suivant <canvas id="n1" width="72" height="72"></canvas><canvas id="n2" width="72" height="72" style="opacity:.5;width:28px;height:28px"></canvas><button id="ham" style="padding:6px 10px">🔨 1</button><button id="snd" aria-label="Son" style="padding:6px 10px">🔊</button></div>
+  <div id="next">Suivant <canvas id="n1" width="72" height="72"></canvas><canvas id="n2" width="72" height="72" style="opacity:.5;width:28px;height:28px"></canvas><button id="ham" style="padding:6px 10px">🔨 1</button><button id="menuBtn" style="padding:6px 10px">🪙 <span id="coinsTop">0</span></button><button id="snd" aria-label="Son" style="padding:6px 10px">🔊</button></div>
   <div id="board"><canvas id="c"></canvas><div id="combo"></div></div>
 </div>
-<div id="over"><div class="card">
+<div id="over" class="modal"><div class="card">
   <h2>Partie terminée</h2>
   <div id="newbest">🏆 Nouveau record !</div>
   <p id="ovtxt"></p>
-  <div class="row"><button class="primary" id="cont">Continuer</button><button id="again">Rejouer</button><button id="share">Partager</button></div>
+  <p id="earn"></p>
+  <div class="row"><button class="primary" id="cont">Continuer</button><button id="again">Rejouer</button><button id="share">Partager</button><button id="dbl">📺 Doubler les pièces</button></div>
+</div></div>
+<div id="menu" class="modal"><div class="card">
+  <h2>🪙 <span id="coins">0</span></h2>
+  <h3>Missions du jour</h3><div id="missions"></div>
+  <h3>Skins</h3><div id="skins"></div>
+  <button class="primary" id="closeMenu">Fermer</button>
 </div></div>
 <script>
 (() => {
@@ -51,11 +63,12 @@ const COLS = 5, ROWS = 7;
 const $ = id => document.getElementById(id);
 const cv = $('c'), ctx = cv.getContext('2d');
 let grid, cur, nxt, score, maxLv, busy, over, rng, daily = false, hoverCol = -1, cell = 60, dpr = 1;
-let fx = [], hams, nextHam, hamMode, continued, startBest;
+let fx = [], gs, hams, nextHam, hamMode, continued, startBest;
 
 const store = {
   get(k){ try { return +localStorage.getItem(k) || 0 } catch { return 0 } },
-  set(k,v){ try { localStorage.setItem(k, v) } catch {} }
+  set(k,v){ try { localStorage.setItem(k, v) } catch {} },
+  json(k, d){ try { return JSON.parse(localStorage.getItem(k)) || d } catch { return d } }
 };
 const bestKey = () => daily ? 'ss_best_' + today() : 'ss_best';
 const today = () => new Date().toISOString().slice(0,10);
@@ -83,7 +96,54 @@ const sfx = {
 };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const label = lv => { const v = 2 ** lv; return v >= 1e6 ? (v/1048576|0)+'M' : v >= 1e4 ? (v/1024|0)+'K' : ''+v };
-const color = lv => `hsl(${(lv*47+200)%360} 72% ${lv%2?58:66}%)`;
+const SKINS = [
+  {id:'classic', name:'Classique', price:0,   r:12, col: lv => `hsl(${(lv*47+200)%360} 72% ${lv%2?58:66}%)`},
+  {id:'candy',   name:'Bonbons',   price:150, r:24, col: lv => `hsl(${(lv*37+300)%360} 85% ${lv%2?72:80}%)`},
+  {id:'neon',    name:'Néon',      price:300, r:6,  col: lv => `hsl(${(lv*61+90)%360} 100% 55%)`},
+  {id:'gold',    name:'Or & Nuit', price:500, r:2,  col: lv => `hsl(${45-lv*2} 90% ${Math.max(52, 80-lv*2)}%)`},
+];
+let coins = store.get('ss_coins'), owned = store.json('ss_owned', ['classic']), skinId = (() => { try { return localStorage.getItem('ss_skin') || 'classic' } catch { return 'classic' } })();
+const skin = () => SKINS.find(k => k.id === skinId) || SKINS[0];
+const color = lv => skin().col(lv);
+// Publicités récompensées : AdMob en natif (Capacitor), simulées sur le web
+const AD_IDS = {android: 'ca-app-pub-3940256099942544/5224354917', ios: 'ca-app-pub-3940256099942544/1712485313'}; // IDs de test Google
+const ads = {
+  async rewarded(){
+    const C = window.Capacitor, A = C?.Plugins?.AdMob;
+    if (!A || !C.isNativePlatform?.()) { await sleep(300); return true }
+    try { await A.initialize(); await A.prepareRewardVideoAd({adId: AD_IDS[C.getPlatform()]}); return !!(await A.showRewardVideoAd()) } catch { return false }
+  }
+};
+// Missions du jour : 3 missions tirées de la date, identiques pour tous
+const MISSIONS = {
+  tile:   (g) => [`Atteins la tuile ${label(g)}`, () => maxLv],
+  combo:  (g) => [`Fais un combo x${g}`, () => gs.combo],
+  score:  (g) => [`Marque ${g} points en une partie`, () => score],
+  merges: (g) => [`Fusionne ${g} fois aujourd'hui`, () => ms.merges],
+};
+let ms = store.json('ss_ms', {});
+function loadMissions(){
+  if (ms.date === today()) return;
+  const rr = mulberry(seed(today() + 'm')), pick = n => Math.floor(rr() * n);
+  const opts = [['tile', 7 + pick(3), 60], ['combo', 3 + pick(2), 50], ['score', 1000 * (2 + pick(4)), 60], ['merges', 30 + 10 * pick(4), 40]];
+  opts.splice(pick(4), 1);
+  ms = {date: today(), merges: 0, list: opts.map(([t, g, rw]) => ({t, g, r: rw, done: false}))};
+  save();
+}
+function checkMissions(){
+  for (const m of ms.list) if (!m.done) { const [txt, val] = MISSIONS[m.t](m.g);
+    if (val() >= m.g) { m.done = true; coins += m.r; toast(`🎯 ${txt} ! +${m.r} 🪙`); tone(660, .15); tone(990, .25, 'sine', .15, 1, .12); save() } }
+}
+function save(){
+  store.set('ss_coins', coins); store.set('ss_owned', JSON.stringify(owned));
+  store.set('ss_skin', skinId); store.set('ss_ms', JSON.stringify(ms));
+}
+function renderMenu(){
+  $('coins').textContent = coins;
+  $('missions').innerHTML = ms.list.map(m => { const [txt, val] = MISSIONS[m.t](m.g);
+    return `<div class="mi ${m.done ? 'done' : ''}"><span>${txt}</span><b>${m.done ? '✅' : (m.t === 'tile' ? label(Math.min(val(), m.g)) + '/' + label(m.g) : Math.min(val(), m.g) + '/' + m.g) + ' · +' + m.r + '🪙'}</b></div>` }).join('');
+  $('skins').innerHTML = SKINS.map(k => `<button class="sk ${k.id === skinId ? 'on' : ''}" data-k="${k.id}"><i style="background:${k.col(3)};border-radius:${k.r/2}px"></i>${k.name}<small>${owned.includes(k.id) ? (k.id === skinId ? 'Équipé' : 'Choisir') : k.price + ' 🪙'}</small></button>`).join('');
+}
 
 function randLv(){
   const top = Math.max(1, Math.min(maxLv - 1, 6));
@@ -94,7 +154,7 @@ function newGame(){
   grid = Array.from({length: COLS}, () => []);
   rng = daily ? mulberry(seed(today())) : Math.random;
   score = 0; maxLv = 3; busy = false; over = false;
-  fx = []; hams = 1; nextHam = 1500; hamMode = false; continued = false; startBest = store.get(bestKey());
+  fx = []; gs = {combo: 0}; hams = 1; nextHam = 1500; hamMode = false; continued = false; startBest = store.get(bestKey());
   cur = randLv(); nxt = randLv();
   $('over').style.display = 'none';
   $('mode').textContent = daily ? 'Défi du jour' : 'Classique';
@@ -105,11 +165,14 @@ function ui(){
   const b = Math.max(store.get(bestKey()), score);
   store.set(bestKey(), b); $('best').textContent = b;
   while (score >= nextHam) { hams++; nextHam += 1500; tone(880, .2, 'sine', .15) }
+  loadMissions(); checkMissions();
+  $('coinsTop').textContent = coins;
+  document.documentElement.style.setProperty('--bg', `hsl(${(250 + (maxLv - 3) * 23) % 360} 32% 14%)`);
   $('ham').textContent = '🔨 ' + hams; $('ham').classList.toggle('on', hamMode);
   drawTile($('n1').getContext('2d'), cur); drawTile($('n2').getContext('2d'), nxt);
 }
 function drawTile(g, lv){
-  g.clearRect(0,0,72,72); rrect(g, 4,4,64,64,14, color(lv));
+  g.clearRect(0,0,72,72); rrect(g, 4,4,64,64,skin().r*1.1, color(lv));
   g.fillStyle = '#1b1830'; g.font = `800 ${label(lv).length > 3 ? 20 : 26}px system-ui`;
   g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(label(lv), 36, 38);
 }
@@ -144,13 +207,14 @@ async function resolve(){
     combo++;
     const before = new Map(); grid.forEach(col => col.forEach((t,i) => before.set(t,i)));
     target.lv += group.length - 1; target.s = 1.35;
-    maxLv = Math.max(maxLv, target.lv);
+    if (target.lv > maxLv && target.lv >= 6) toast('✨ Nouvelle tuile ' + label(target.lv) + ' !');
+    maxLv = Math.max(maxLv, target.lv); gs.combo = Math.max(gs.combo, combo); ms.merges++;
     score += 2 ** target.lv * combo;
     const dead = new Set(group.filter(t => t !== target));
     for (let c = 0; c < COLS; c++) grid[c] = grid[c].filter(t => !dead.has(t));
     grid.forEach(col => col.forEach((t,i) => t.fresh = t === target || before.get(t) !== i));
     vibrate(combo > 1 ? [15,30,15] : 15); sfx.merge(target.lv, combo);
-    if (combo > 1) showCombo(combo);
+    if (combo > 1) toast('Combo x' + combo);
     const tc = grid.findIndex(col => col.includes(target)), tr = grid[tc].indexOf(target);
     burst(tc*cell + cell/2, cell*(ROWS+1) - (tr+.5)*cell, color(target.lv), '+' + 2 ** target.lv * combo);
     ui();
@@ -173,15 +237,17 @@ async function smash(e){
   await sleep(160); await resolve();
   busy = false; ui();
 }
-function showCombo(n){
-  const el = $('combo'); el.textContent = 'Combo x' + n;
+function toast(txt){
+  const el = $('combo'); el.textContent = txt;
   el.style.opacity = 1; el.style.transform = 'scale(1.15)';
-  clearTimeout(showCombo.t); showCombo.t = setTimeout(() => { el.style.opacity = 0; el.style.transform = 'scale(1)' }, 600);
+  clearTimeout(toast.t); toast.t = setTimeout(() => { el.style.opacity = 0; el.style.transform = 'scale(1)' }, 900);
 }
 function end(){
   over = true; busy = false; hamMode = false; ui();
   $('newbest').style.display = score > startBest && startBest > 0 ? 'block' : 'none';
-  $('cont').style.display = continued ? 'none' : ''; vibrate([40,60,80]); sfx.over();
+  $('cont').style.display = continued ? 'none' : '';
+  const earned = Math.floor(score / 20); coins += earned; save(); ui();
+  $('earn').textContent = `+${earned} 🪙`; $('dbl').style.display = earned ? '' : 'none'; $('dbl').dataset.n = earned; vibrate([40,60,80]); sfx.over();
   $('ovtxt').textContent = `Score ${score} · meilleure tuile ${label(maxLv)}` + (daily ? ' · Défi du jour' : '');
   setTimeout(() => $('over').style.display = 'flex', 400);
 }
@@ -205,7 +271,7 @@ function frame(){
     grid[c].forEach((t, r) => {
       t.vy += (r - t.vy) * .35; t.s += (1 - t.s) * .2;
       const y = H - (t.vy + 1) * cell, sz = (cell - 8) * t.s, o = (cell - sz) / 2;
-      rrect(ctx, c*cell+o, y+o, sz, sz, 12*t.s, color(t.lv));
+      rrect(ctx, c*cell+o, y+o, sz, sz, skin().r*cell/60*t.s, color(t.lv));
       const L = label(t.lv);
       ctx.fillStyle = '#1b1830'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.font = `800 ${cell * (L.length > 3 ? .3 : .38) * t.s}px system-ui`;
@@ -233,7 +299,14 @@ const sndBtn = $('snd'), sndUi = () => sndBtn.textContent = muted ? '🔇' : '�
 sndBtn.onclick = () => { muted = !muted; store.set('ss_mute', muted ? 1 : 0); sndUi(); sfx.drop() };
 $('again').onclick = newGame;
 // « Continuer » : une fois par partie (emplacement pour une pub récompensée)
-$('cont').onclick = () => { continued = true; over = false; grid.forEach(col => col.splice(-3)); $('over').style.display = 'none'; tone(523, .15); tone(784, .2, 'sine', .15, 1, .1); ui() };
+$('cont').onclick = async () => { if (!(await ads.rewarded())) return; continued = true; over = false; grid.forEach(col => col.splice(-3)); $('over').style.display = 'none'; tone(523, .15); tone(784, .2, 'sine', .15, 1, .1); ui() };
+$('dbl').onclick = async () => { if (!(await ads.rewarded())) return; coins += +$('dbl').dataset.n; save(); ui();
+  $('earn').textContent = `+${$('dbl').dataset.n * 2} 🪙`; $('dbl').style.display = 'none' };
+$('menuBtn').onclick = () => { if (busy) return; renderMenu(); $('menu').style.display = 'flex' };
+$('closeMenu').onclick = () => $('menu').style.display = 'none';
+$('skins').onclick = e => { const b = e.target.closest('[data-k]'); if (!b) return; const k = SKINS.find(s => s.id === b.dataset.k);
+  if (!owned.includes(k.id)) { if (coins < k.price) { b.querySelector('small').textContent = 'Pas assez 🪙'; return } coins -= k.price; owned.push(k.id); tone(784, .2) }
+  skinId = k.id; save(); renderMenu(); ui() };
 $('ham').onclick = () => { if (busy || over || !hams) return; hamMode = !hamMode; ui() };
 $('mode').onclick = () => { if (busy) return; daily = !daily; newGame() };
 $('share').onclick = async () => {

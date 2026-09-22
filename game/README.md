@@ -20,5 +20,19 @@ npm run android          # ou: npm run ios
 ```
 Publiez ensuite avec Android Studio (Play Console) ou Xcode (App Store Connect).
 
+## Contenu
+- Sons synthétisés (Web Audio), bouton muet
+- Marteau (casser une tuile), « Continuer » et « Doubler les pièces » via pub récompensée
+- Pièces 🪙, 4 skins à débloquer, 3 missions du jour (identiques pour tous)
+- Fond qui change de couleur à chaque nouvelle tuile record
+
+## Publicités (AdMob)
+Le plugin `@capacitor-community/admob` est utilisé automatiquement dans l'app native ; sur le web, les pubs sont simulées.
+1. Créez l'app sur admob.google.com et récupérez l'App ID et les IDs de blocs « Rewarded ».
+2. Android : dans `android/app/src/main/AndroidManifest.xml`, sous `<application>` :
+   `<meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-XXX~YYY"/>`
+3. iOS : dans `ios/App/App/Info.plist`, ajoutez `GADApplicationIdentifier` = votre App ID.
+4. Remplacez les IDs de test dans `AD_IDS` (`www/index.html`) par vos IDs de production.
+
 ## Prochaines étapes
-Sons, pubs récompensées « continuer » (AdMob via `@capacitor-community/admob`), achat « sans pub », skins, classement (Game Center / Play Games).
+Achat « sans pub », classement (Game Center / Play Games), icône et écran de lancement (`npx @capacitor/assets generate`).
