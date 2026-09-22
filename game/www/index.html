@@ -32,30 +32,41 @@ button.primary{background:var(--acc);color:#2a2000;font-weight:700}
 #skins{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
 .sk{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px;background:#ffffff10}.sk.on{outline:2px solid var(--acc)}
 .sk i{width:28px;height:28px;display:block}.sk small{color:var(--mut);font-size:11px}
+.opt{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #ffffff12;text-align:left}
+.opt input{accent-color:var(--acc);width:22px;height:22px}.opt input[type=range]{width:50%}
+.opt select{font:inherit;background:var(--bg);color:var(--txt);border:0;border-radius:10px;padding:8px}
 </style>
 </head>
 <body>
 <div id="app">
   <header>
-    <div class="stat"><small>Score</small><b id="score">0</b></div>
-    <button id="mode">Classique</button>
-    <div class="stat"><small>Record</small><b id="best">0</b></div>
+    <div class="stat"><small data-i="score"></small><b id="score">0</b></div>
+    <button id="mode"></button>
+    <div class="stat"><small data-i="best"></small><b id="best">0</b></div>
   </header>
-  <div id="next">Suivant <canvas id="n1" width="72" height="72"></canvas><canvas id="n2" width="72" height="72" style="opacity:.5;width:28px;height:28px"></canvas><button id="ham" style="padding:6px 10px">🔨 1</button><button id="menuBtn" style="padding:6px 10px">🪙 <span id="coinsTop">0</span></button><button id="snd" aria-label="Son" style="padding:6px 10px">🔊</button></div>
+  <div id="next"><span data-i="next"></span> <canvas id="n1" width="72" height="72"></canvas><canvas id="n2" width="72" height="72" style="opacity:.5;width:28px;height:28px"></canvas><button id="ham" style="padding:6px 10px">🔨 1</button><button id="menuBtn" style="padding:6px 10px">🪙 <span id="coinsTop">0</span></button><button id="optBtn" aria-label="Options" style="padding:6px 10px">⚙️</button></div>
   <div id="board"><canvas id="c"></canvas><div id="combo"></div></div>
 </div>
 <div id="over" class="modal"><div class="card">
-  <h2>Partie terminée</h2>
-  <div id="newbest">🏆 Nouveau record !</div>
+  <h2 data-i="over"></h2>
+  <div id="newbest" data-i="newbest"></div>
   <p id="ovtxt"></p>
   <p id="earn"></p>
-  <div class="row"><button class="primary" id="cont">Continuer</button><button id="again">Rejouer</button><button id="share">Partager</button><button id="dbl">📺 Doubler les pièces</button></div>
+  <div class="row"><button class="primary" id="cont" data-i="cont"></button><button id="again" data-i="again"></button><button id="share" data-i="share"></button><button id="dbl" data-i="dbl"></button></div>
 </div></div>
 <div id="menu" class="modal"><div class="card">
   <h2>🪙 <span id="coins">0</span></h2>
-  <h3>Missions du jour</h3><div id="missions"></div>
-  <h3>Skins</h3><div id="skins"></div>
-  <button class="primary" id="closeMenu">Fermer</button>
+  <h3 data-i="missions"></h3><div id="missions"></div>
+  <h3 data-i="skins"></h3><div id="skins"></div>
+  <button class="primary" id="closeMenu" data-i="close"></button>
+</div></div>
+<div id="opts" class="modal"><div class="card">
+  <h2 data-i="options"></h2>
+  <label class="opt"><span data-i="sound"></span><input type="checkbox" id="oSnd"></label>
+  <label class="opt"><span data-i="volume"></span><input type="range" id="oVol" min="0" max="100"></label>
+  <label class="opt"><span data-i="vibration"></span><input type="checkbox" id="oVib"></label>
+  <label class="opt"><span data-i="language"></span><select id="oLang"></select></label>
+  <button class="primary" id="closeOpts" data-i="close" style="margin-top:16px"></button>
 </div></div>
 <script>
 (() => {
@@ -74,10 +85,54 @@ const bestKey = () => daily ? 'ss_best_' + today() : 'ss_best';
 const today = () => new Date().toISOString().slice(0,10);
 function mulberry(a){ return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296 } }
 const seed = s => [...s].reduce((h,c) => Math.imul(h ^ c.charCodeAt(0), 16777619), 2166136261);
-const vibrate = ms => { try { navigator.vibrate && navigator.vibrate(ms) } catch {} };
+const I18N = {
+  fr: {_: 'Français', score: 'Score', best: 'Record', classic: 'Classique', daily: 'Défi du jour', next: 'Suivant', over: 'Partie terminée',
+    newbest: '🏆 Nouveau record !', cont: 'Continuer', again: 'Rejouer', share: 'Partager', dbl: '📺 Doubler les pièces', missions: 'Missions du jour',
+    skins: 'Skins', close: 'Fermer', copied: 'Copié !', combo: 'Combo x{0}', newtile: '✨ Nouvelle tuile {0} !', m_tile: 'Atteins la tuile {0}',
+    m_combo: 'Fais un combo x{0}', m_score: 'Marque {0} points en une partie', m_merges: "Fusionne {0} fois aujourd'hui", equipped: 'Équipé',
+    choose: 'Choisir', notenough: 'Pas assez 🪙', hint1: 'Touchez une colonne pour lâcher la tuile', hint2: 'Les tuiles identiques fusionnent !',
+    hamhint: '🔨 Touchez une tuile à casser', besttile: 'Score {0} · meilleure tuile {1}', sharetxt: "J'ai fait {0} points sur Stack & Snap ! Tu fais mieux ?",
+    options: 'Options', sound: 'Son', volume: 'Volume', vibration: 'Vibrations', language: 'Langue',
+    sk: ['Classique', 'Bonbons', 'Néon', 'Or & Nuit']},
+  en: {_: 'English', score: 'Score', best: 'Best', classic: 'Classic', daily: 'Daily challenge', next: 'Next', over: 'Game over',
+    newbest: '🏆 New record!', cont: 'Continue', again: 'Play again', share: 'Share', dbl: '📺 Double coins', missions: 'Daily missions',
+    skins: 'Skins', close: 'Close', copied: 'Copied!', combo: 'Combo x{0}', newtile: '✨ New tile {0}!', m_tile: 'Reach the {0} tile',
+    m_combo: 'Make a x{0} combo', m_score: 'Score {0} points in one game', m_merges: 'Merge {0} times today', equipped: 'Equipped',
+    choose: 'Select', notenough: 'Not enough 🪙', hint1: 'Tap a column to drop the tile', hint2: 'Matching tiles merge!',
+    hamhint: '🔨 Tap a tile to smash', besttile: 'Score {0} · best tile {1}', sharetxt: 'I scored {0} points in Stack & Snap! Can you beat it?',
+    options: 'Settings', sound: 'Sound', volume: 'Volume', vibration: 'Vibration', language: 'Language',
+    sk: ['Classic', 'Candy', 'Neon', 'Gold & Night']},
+  es: {_: 'Español', score: 'Puntos', best: 'Récord', classic: 'Clásico', daily: 'Reto diario', next: 'Siguiente', over: 'Fin de la partida',
+    newbest: '🏆 ¡Nuevo récord!', cont: 'Continuar', again: 'Otra vez', share: 'Compartir', dbl: '📺 Doblar monedas', missions: 'Misiones diarias',
+    skins: 'Aspectos', close: 'Cerrar', copied: '¡Copiado!', combo: 'Combo x{0}', newtile: '✨ ¡Nueva ficha {0}!', m_tile: 'Consigue la ficha {0}',
+    m_combo: 'Haz un combo x{0}', m_score: 'Consigue {0} puntos en una partida', m_merges: 'Fusiona {0} veces hoy', equipped: 'Equipado',
+    choose: 'Elegir', notenough: 'Faltan 🪙', hint1: 'Toca una columna para soltar la ficha', hint2: '¡Las fichas iguales se fusionan!',
+    hamhint: '🔨 Toca una ficha para romperla', besttile: 'Puntos {0} · mejor ficha {1}', sharetxt: '¡Hice {0} puntos en Stack & Snap! ¿Me superas?',
+    options: 'Opciones', sound: 'Sonido', volume: 'Volumen', vibration: 'Vibración', language: 'Idioma',
+    sk: ['Clásico', 'Caramelo', 'Neón', 'Oro y Noche']},
+  de: {_: 'Deutsch', score: 'Punkte', best: 'Rekord', classic: 'Klassisch', daily: 'Tagesaufgabe', next: 'Nächste', over: 'Spiel vorbei',
+    newbest: '🏆 Neuer Rekord!', cont: 'Weiter', again: 'Nochmal', share: 'Teilen', dbl: '📺 Münzen verdoppeln', missions: 'Tägliche Missionen',
+    skins: 'Skins', close: 'Schließen', copied: 'Kopiert!', combo: 'Kombo x{0}', newtile: '✨ Neues Plättchen {0}!', m_tile: 'Erreiche das {0}-Plättchen',
+    m_combo: 'Schaffe eine x{0}-Kombo', m_score: 'Erziele {0} Punkte in einem Spiel', m_merges: 'Verschmilz heute {0}-mal', equipped: 'Aktiv',
+    choose: 'Wählen', notenough: 'Zu wenig 🪙', hint1: 'Tippe auf eine Spalte, um das Plättchen fallen zu lassen', hint2: 'Gleiche Plättchen verschmelzen!',
+    hamhint: '🔨 Tippe auf ein Plättchen zum Zerschlagen', besttile: 'Punkte {0} · bestes Plättchen {1}', sharetxt: 'Ich habe {0} Punkte in Stack & Snap! Schaffst du mehr?',
+    options: 'Einstellungen', sound: 'Ton', volume: 'Lautstärke', vibration: 'Vibration', language: 'Sprache',
+    sk: ['Klassisch', 'Bonbons', 'Neon', 'Gold & Nacht']},
+};
+const raw = (k, d) => { try { const v = localStorage.getItem(k); return v === null ? d : v } catch { return d } };
+let lang = raw('ss_lang', (navigator.language || 'en').slice(0, 2)); if (!I18N[lang]) lang = 'en';
+let volume = +raw('ss_vol', 80), noVib = raw('ss_novib', '0') === '1';
+const t = (k, ...a) => (I18N[lang][k] ?? I18N.en[k]).replace(/\{(\d)\}/g, (_, i) => a[i]);
+function applyLang(){
+  document.documentElement.lang = lang;
+  document.querySelectorAll('[data-i]').forEach(el => el.textContent = t(el.dataset.i));
+  $('mode').textContent = t(daily ? 'daily' : 'classic');
+}
+const vibrate = ms => { if (noVib) return; try { navigator.vibrate && navigator.vibrate(ms) } catch {} };
 let actx, muted = store.get('ss_mute') === 1;
 function tone(freq, dur = .12, type = 'sine', vol = .18, slide = 0, delay = 0){
-  if (muted) return;
+  if (muted || !volume) return;
+  vol *= volume / 100;
   try {
     actx = actx || new (window.AudioContext || window.webkitAudioContext)();
     if (actx.state === 'suspended') actx.resume();
@@ -102,7 +157,7 @@ const SKINS = [
   {id:'neon',    name:'Néon',      price:300, r:6,  col: lv => `hsl(${(lv*61+90)%360} 100% 55%)`},
   {id:'gold',    name:'Or & Nuit', price:500, r:2,  col: lv => `hsl(${45-lv*2} 90% ${Math.max(52, 80-lv*2)}%)`},
 ];
-let coins = store.get('ss_coins'), owned = store.json('ss_owned', ['classic']), skinId = (() => { try { return localStorage.getItem('ss_skin') || 'classic' } catch { return 'classic' } })();
+let coins = store.get('ss_coins'), owned = store.json('ss_owned', ['classic']), skinId = raw('ss_skin', 'classic');
 const skin = () => SKINS.find(k => k.id === skinId) || SKINS[0];
 const color = lv => skin().col(lv);
 // Publicités récompensées : AdMob en natif (Capacitor), simulées sur le web
@@ -116,10 +171,10 @@ const ads = {
 };
 // Missions du jour : 3 missions tirées de la date, identiques pour tous
 const MISSIONS = {
-  tile:   (g) => [`Atteins la tuile ${label(g)}`, () => maxLv],
-  combo:  (g) => [`Fais un combo x${g}`, () => gs.combo],
-  score:  (g) => [`Marque ${g} points en une partie`, () => score],
-  merges: (g) => [`Fusionne ${g} fois aujourd'hui`, () => ms.merges],
+  tile:   (g) => [t('m_tile', label(g)), () => maxLv],
+  combo:  (g) => [t('m_combo', g), () => gs.combo],
+  score:  (g) => [t('m_score', g), () => score],
+  merges: (g) => [t('m_merges', g), () => ms.merges],
 };
 let ms = store.json('ss_ms', {});
 function loadMissions(){
@@ -142,7 +197,7 @@ function renderMenu(){
   $('coins').textContent = coins;
   $('missions').innerHTML = ms.list.map(m => { const [txt, val] = MISSIONS[m.t](m.g);
     return `<div class="mi ${m.done ? 'done' : ''}"><span>${txt}</span><b>${m.done ? '✅' : (m.t === 'tile' ? label(Math.min(val(), m.g)) + '/' + label(m.g) : Math.min(val(), m.g) + '/' + m.g) + ' · +' + m.r + '🪙'}</b></div>` }).join('');
-  $('skins').innerHTML = SKINS.map(k => `<button class="sk ${k.id === skinId ? 'on' : ''}" data-k="${k.id}"><i style="background:${k.col(3)};border-radius:${k.r/2}px"></i>${k.name}<small>${owned.includes(k.id) ? (k.id === skinId ? 'Équipé' : 'Choisir') : k.price + ' 🪙'}</small></button>`).join('');
+  $('skins').innerHTML = SKINS.map((k, i) => `<button class="sk ${k.id === skinId ? 'on' : ''}" data-k="${k.id}"><i style="background:${k.col(3)};border-radius:${k.r/2}px"></i>${I18N[lang].sk[i]}<small>${owned.includes(k.id) ? t(k.id === skinId ? 'equipped' : 'choose') : k.price + ' 🪙'}</small></button>`).join('');
 }
 
 function randLv(){
@@ -157,7 +212,7 @@ function newGame(){
   fx = []; gs = {combo: 0}; hams = 1; nextHam = 1500; hamMode = false; continued = false; startBest = store.get(bestKey());
   cur = randLv(); nxt = randLv();
   $('over').style.display = 'none';
-  $('mode').textContent = daily ? 'Défi du jour' : 'Classique';
+  applyLang();
   ui();
 }
 function ui(){
@@ -207,14 +262,14 @@ async function resolve(){
     combo++;
     const before = new Map(); grid.forEach(col => col.forEach((t,i) => before.set(t,i)));
     target.lv += group.length - 1; target.s = 1.35;
-    if (target.lv > maxLv && target.lv >= 6) toast('✨ Nouvelle tuile ' + label(target.lv) + ' !');
+    if (target.lv > maxLv && target.lv >= 6) toast(t('newtile', label(target.lv)));
     maxLv = Math.max(maxLv, target.lv); gs.combo = Math.max(gs.combo, combo); ms.merges++;
     score += 2 ** target.lv * combo;
     const dead = new Set(group.filter(t => t !== target));
     for (let c = 0; c < COLS; c++) grid[c] = grid[c].filter(t => !dead.has(t));
     grid.forEach(col => col.forEach((t,i) => t.fresh = t === target || before.get(t) !== i));
     vibrate(combo > 1 ? [15,30,15] : 15); sfx.merge(target.lv, combo);
-    if (combo > 1) toast('Combo x' + combo);
+    if (combo > 1) toast(t('combo', combo));
     const tc = grid.findIndex(col => col.includes(target)), tr = grid[tc].indexOf(target);
     burst(tc*cell + cell/2, cell*(ROWS+1) - (tr+.5)*cell, color(target.lv), '+' + 2 ** target.lv * combo);
     ui();
@@ -248,7 +303,7 @@ function end(){
   $('cont').style.display = continued ? 'none' : '';
   const earned = Math.floor(score / 20); coins += earned; save(); ui();
   $('earn').textContent = `+${earned} 🪙`; $('dbl').style.display = earned ? '' : 'none'; $('dbl').dataset.n = earned; vibrate([40,60,80]); sfx.over();
-  $('ovtxt').textContent = `Score ${score} · meilleure tuile ${label(maxLv)}` + (daily ? ' · Défi du jour' : '');
+  $('ovtxt').textContent = t('besttile', score, label(maxLv)) + (daily ? ' · ' + t('daily') : '');
   setTimeout(() => $('over').style.display = 'flex', 400);
 }
 
@@ -287,16 +342,21 @@ function frame(){
   }
   ctx.globalAlpha = 1;
   if (!score && grid.every(col => !col.length)) { ctx.fillStyle = '#a9a2cc'; ctx.font = `600 ${cell*.26}px system-ui`;
-    ctx.fillText('Touchez une colonne pour lâcher la tuile', W/2, H/2); ctx.fillText('Les tuiles identiques fusionnent !', W/2, H/2 + cell*.4) }
-  if (hamMode) { ctx.fillStyle = '#ffcf5c'; ctx.font = `700 ${cell*.26}px system-ui`; ctx.fillText('🔨 Touchez une tuile à casser', W/2, cell/2) }
+    ctx.fillText(t('hint1'), W/2, H/2); ctx.fillText(t('hint2'), W/2, H/2 + cell*.4) }
+  if (hamMode) { ctx.fillStyle = '#ffcf5c'; ctx.font = `700 ${cell*.26}px system-ui`; ctx.fillText(t('hamhint'), W/2, cell/2) }
   requestAnimationFrame(frame);
 }
 const colAt = e => { const r = cv.getBoundingClientRect(); return Math.max(0, Math.min(COLS-1, Math.floor((e.clientX - r.left) / (r.width / COLS)))) };
 cv.addEventListener('pointermove', e => hoverCol = colAt(e));
 cv.addEventListener('pointerleave', () => hoverCol = -1);
 cv.addEventListener('pointerdown', e => hamMode ? smash(e) : drop(colAt(e)));
-const sndBtn = $('snd'), sndUi = () => sndBtn.textContent = muted ? '🔇' : '🔊'; sndUi();
-sndBtn.onclick = () => { muted = !muted; store.set('ss_mute', muted ? 1 : 0); sndUi(); sfx.drop() };
+$('oLang').innerHTML = Object.entries(I18N).map(([k, v]) => `<option value="${k}">${v._}</option>`).join('');
+$('optBtn').onclick = () => { if (busy) return; $('oSnd').checked = !muted; $('oVol').value = volume; $('oVib').checked = !noVib; $('oLang').value = lang; $('opts').style.display = 'flex' };
+$('closeOpts').onclick = () => $('opts').style.display = 'none';
+$('oSnd').onchange = e => { muted = !e.target.checked; store.set('ss_mute', muted ? 1 : 0); sfx.drop() };
+$('oVol').onchange = e => { volume = +e.target.value; store.set('ss_vol', volume); sfx.drop() };
+$('oVib').onchange = e => { noVib = !e.target.checked; store.set('ss_novib', noVib ? 1 : 0); vibrate(30) };
+$('oLang').onchange = e => { lang = e.target.value; store.set('ss_lang', lang); applyLang() };
 $('again').onclick = newGame;
 // « Continuer » : une fois par partie (emplacement pour une pub récompensée)
 $('cont').onclick = async () => { if (!(await ads.rewarded())) return; continued = true; over = false; grid.forEach(col => col.splice(-3)); $('over').style.display = 'none'; tone(523, .15); tone(784, .2, 'sine', .15, 1, .1); ui() };
@@ -305,13 +365,13 @@ $('dbl').onclick = async () => { if (!(await ads.rewarded())) return; coins += +
 $('menuBtn').onclick = () => { if (busy) return; renderMenu(); $('menu').style.display = 'flex' };
 $('closeMenu').onclick = () => $('menu').style.display = 'none';
 $('skins').onclick = e => { const b = e.target.closest('[data-k]'); if (!b) return; const k = SKINS.find(s => s.id === b.dataset.k);
-  if (!owned.includes(k.id)) { if (coins < k.price) { b.querySelector('small').textContent = 'Pas assez 🪙'; return } coins -= k.price; owned.push(k.id); tone(784, .2) }
+  if (!owned.includes(k.id)) { if (coins < k.price) { b.querySelector('small').textContent = t('notenough'); return } coins -= k.price; owned.push(k.id); tone(784, .2) }
   skinId = k.id; save(); renderMenu(); ui() };
 $('ham').onclick = () => { if (busy || over || !hams) return; hamMode = !hamMode; ui() };
 $('mode').onclick = () => { if (busy) return; daily = !daily; newGame() };
 $('share').onclick = async () => {
-  const text = `J'ai fait ${score} points sur Stack & Snap${daily ? ' (Défi du jour ' + today() + ')' : ''} ! Tu fais mieux ?`;
-  try { if (navigator.share) await navigator.share({text}); else { await navigator.clipboard.writeText(text); $('share').textContent = 'Copié !' } } catch {}
+  const text = t('sharetxt', score) + (daily ? ` (${t('daily')} ${today()})` : '');
+  try { if (navigator.share) await navigator.share({text}); else { await navigator.clipboard.writeText(text); $('share').textContent = t('copied') } } catch {}
 };
 addEventListener('resize', resize);
 resize(); newGame(); frame();
