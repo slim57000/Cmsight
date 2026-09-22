@@ -10,488 +10,123 @@
 <style>
 :root{--bg:#1b1830;--panel:#2a2548;--txt:#f4f1ff;--mut:#a9a2cc;--acc:#ffcf5c}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
-html,body{transition:background 1.2s;margin:0;height:100%;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden;touch-action:manipulation}
-#app{display:flex;flex-direction:column;height:100%;padding:env(safe-area-inset-top) 16px env(safe-area-inset-bottom)}
-#topbar{display:flex;justify-content:flex-end;gap:8px;padding-top:10px}#optBtn,#shopBtn{padding:8px 12px;font-size:18px}
-.item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #ffffff12;text-align:left}
-.item small{display:block;color:var(--mut);font-size:12px}.item button{padding:8px 12px;white-space:nowrap;background:#ffffff18}.item button.primary{background:var(--acc)}
-.item.best{background:#ffcf5c14;border-radius:12px;padding:10px;border:1px solid #ffcf5c55}.tag{display:block;color:var(--acc);font-size:11px;font-weight:700;text-transform:uppercase}
-header{display:flex;justify-content:space-between;align-items:center;padding:14px 0 6px;gap:8px}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden;touch-action:manipulation;transition:background 1.2s}
+#bgfx{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.7}
+body[data-bg=bg_stars] #bgfx{background-image:radial-gradient(1.5px 1.5px at 10% 20%,#fff,transparent),radial-gradient(1px 1px at 30% 70%,#fff,transparent),radial-gradient(1.5px 1.5px at 55% 35%,#fff,transparent),radial-gradient(1px 1px at 75% 80%,#fff,transparent),radial-gradient(1.5px 1.5px at 90% 15%,#fff,transparent),radial-gradient(1px 1px at 45% 90%,#fff,transparent);background-size:220px 220px;animation:drift 40s linear infinite}
+body[data-bg=bg_aurora] #bgfx{background:linear-gradient(120deg,#5b2a86,#0f5f6b,#7a2d6b,#1f3f8a);background-size:400% 400%;animation:aurora 14s ease infinite;opacity:.45}
+@keyframes drift{to{background-position:0 -220px}}@keyframes aurora{50%{background-position:100% 50%}}
+#app{position:relative;z-index:1;display:flex;flex-direction:column;height:100%;max-width:560px;margin:0 auto;padding:env(safe-area-inset-top) 16px env(safe-area-inset-bottom)}
+#topbar{display:flex;gap:8px;padding-top:10px}#topbar .sp{flex:1}#topbar button{padding:8px 12px;font-size:16px}
+header{display:flex;justify-content:space-between;align-items:center;padding:12px 0 4px;gap:8px}
 .stat{background:var(--panel);border-radius:12px;padding:6px 12px;min-width:84px;text-align:center}
-.stat small{display:block;font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em}
-.stat b{font-size:20px}
+.stat small{display:block;font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em}.stat b{font-size:20px}
+#info{text-align:center;color:var(--acc);font-weight:700;font-size:14px;min-height:20px}
 button{font:inherit;border:0;border-radius:12px;padding:10px 14px;background:var(--panel);color:var(--txt);cursor:pointer}
-button:disabled{opacity:.4}
-#top{text-align:left;margin:0;padding-left:24px}#top small{color:var(--mut)}
-@media (max-width:380px){#next>span{display:none}#next{gap:6px}}
-button.primary{background:var(--acc);color:#2a2000;font-weight:700}
-#next{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px;color:var(--mut);font-size:13px;min-height:44px}
-#next canvas{width:36px;height:36px}
-#board{flex:1;position:relative;display:flex;align-items:center;justify-content:center;min-height:0}
-#c{touch-action:none}
-#ham.on{background:var(--acc);color:#2a2000}
-#newbest{color:var(--acc);font-weight:800;display:none}
-#combo{position:absolute;top:8px;left:8px;right:8px;text-align:center;font-weight:800;font-size:22px;color:var(--acc);opacity:0;transition:opacity .2s,transform .2s;pointer-events:none}
-.modal{position:fixed;inset:0;background:#0009;display:none;align-items:center;justify-content:center;padding:16px}
-.modal .card{max-height:90vh;overflow:auto;background:var(--panel);border-radius:20px;padding:24px;text-align:center;max-width:320px;width:100%}
-.modal h2{margin:0 0 8px}.modal p{color:var(--mut);margin:4px 0 16px}
-.modal .row{flex-wrap:wrap;display:flex;gap:8px;justify-content:center}
+button:disabled{opacity:.4}button.primary{background:var(--acc);color:#2a2000;font-weight:700}
+#next{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;color:var(--mut);font-size:13px;min-height:44px}
+#next canvas{width:36px;height:36px;cursor:pointer}#next button{padding:6px 10px}#ham.on{background:var(--acc);color:#2a2000}
+#board{flex:1;position:relative;display:flex;align-items:center;justify-content:center;min-height:0}#c{touch-action:none}
+#toast{position:absolute;top:8px;left:8px;right:8px;text-align:center;font-weight:800;font-size:20px;color:var(--acc);opacity:0;transform:translateY(-6px);transition:.25s;pointer-events:none;text-shadow:0 2px 8px #0008}
+#toast.on{opacity:1;transform:none}
+.modal{position:fixed;inset:0;z-index:5;background:#0009;display:none;align-items:center;justify-content:center;padding:16px}
+.card{max-height:90vh;overflow:auto;background:var(--panel);border-radius:20px;padding:22px;text-align:center;max-width:360px;width:100%}
+.card h2{margin:0 0 8px}.card p{color:var(--mut);margin:4px 0 12px}
 .card h3{margin:16px 0 6px;font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em;text-align:left}
-.mi{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid #ffffff12;text-align:left;font-size:14px}.mi.done{opacity:.5}.mi b{white-space:nowrap}
-#skins{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:12px}
+.mi,.item,.opt{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #ffffff12;text-align:left;font-size:14px}
+.mi.done{opacity:.5}.mi b{white-space:nowrap}
+.item small{display:block;color:var(--mut);font-size:12px}.item button{padding:8px 12px;white-space:nowrap;background:#ffffff18}.item button.primary{background:var(--acc)}
+.item.best{background:#ffcf5c14;border-radius:12px;padding:10px;border:1px solid #ffcf5c55}
+.item.flash{background:#ff5c7a1c;border-radius:12px;padding:10px;border:1px solid #ff5c7a88}
+.tag{display:block;color:var(--acc);font-size:11px;font-weight:700;text-transform:uppercase}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .sk{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px;background:#ffffff10}.sk.on{outline:2px solid var(--acc)}
 .sk i{width:28px;height:28px;display:block}.sk small{color:var(--mut);font-size:11px}
-.opt{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #ffffff12;text-align:left}
 .opt input{accent-color:var(--acc);width:22px;height:22px}.opt input[type=range]{width:50%}
-.opt select{font:inherit;background:var(--bg);color:var(--txt);border:0;border-radius:10px;padding:8px}
+select,textarea{font:inherit;background:var(--bg);color:var(--txt);border:0;border-radius:10px;padding:8px}
+textarea{width:100%;height:64px;font-size:11px;margin-top:8px;user-select:text}
+#top{text-align:left;margin:0;padding-left:24px}#top small{color:var(--mut)}
+.modes button{display:block;width:100%;text-align:left;margin-bottom:8px;background:#ffffff10}.modes small{display:block;color:var(--mut);font-size:12px}
+#lvls{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}#lvls button{padding:8px 0;font-size:14px;background:#ffffff14}#lvls small{display:block;font-size:9px;color:var(--acc);min-height:11px}
+.tier{display:grid;grid-template-columns:28px 1fr 1fr;gap:6px;align-items:center;margin-bottom:6px}.tier b{color:var(--mut)}.tier.on b{color:var(--acc)}
+.tier button{padding:8px 4px;font-size:12px;background:#ffffff12}.tier button:not(:disabled){background:var(--acc);color:#2a2000;font-weight:700}
+.bar{height:10px;background:#ffffff18;border-radius:6px;overflow:hidden;margin:6px 0 12px}.bar i{display:block;height:100%;background:var(--acc)}
+#days{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}#days div{background:#ffffff10;border-radius:10px;padding:8px 2px;font-size:12px}
+#days .on{outline:2px solid var(--acc);background:#ffcf5c22}#days .past{opacity:.4}
+@media (max-width:380px){#next>span{display:none}}
 </style>
 </head>
 <body>
+<div id="bgfx"></div>
 <div id="app">
-  <div id="topbar"><button id="shopBtn" aria-label="Shop">🛒</button><button id="optBtn" aria-label="Options">⚙️</button></div>
+  <div id="topbar"><button id="menuBtn">🪙 <span id="coinsTop">0</span></button><button id="passBtn">🎖️ <span id="passTop">0</span></button><span class="sp"></span><button id="shopBtn" aria-label="Shop">🛒</button><button id="optBtn" aria-label="Options">⚙️</button></div>
   <header>
     <div class="stat"><small data-i="score"></small><b id="score">0</b></div>
     <button id="mode"></button>
     <div class="stat"><small data-i="best"></small><b id="best">0</b></div>
   </header>
-  <div id="next"><span data-i="next"></span> <canvas id="n1" width="72" height="72"></canvas><canvas id="n2" width="72" height="72" style="opacity:.5;width:28px;height:28px"></canvas><button id="ham" style="padding:6px 10px">🔨 1</button><button id="undo" style="padding:6px 10px">↩️ 1</button><button id="menuBtn" style="padding:6px 10px">🪙 <span id="coinsTop">0</span></button></div>
-  <div id="board"><canvas id="c"></canvas><div id="combo"></div></div>
+  <div id="info"></div>
+  <div id="next"><span data-i="next"></span><canvas id="n1" width="72" height="72"></canvas><canvas id="n2" width="72" height="72" style="opacity:.6;width:28px;height:28px"></canvas><button id="ham">🔨</button><button id="undo">↩️</button><button id="shuf">🔀</button></div>
+  <div id="board"><canvas id="c"></canvas><div id="toast"></div></div>
 </div>
+
 <div id="over" class="modal"><div class="card">
-  <h2 data-i="over"></h2>
-  <div id="newbest" data-i="newbest"></div>
-  <p id="ovtxt"></p>
-  <p id="earn"></p>
-  <div class="row"><button class="primary" id="cont" data-i="cont"></button><button id="again" data-i="again"></button><button id="share" data-i="share"></button><button id="dbl" data-i="dbl"></button></div>
-</div></div>
+  <h2 id="ovTitle"></h2><div id="newbest" data-i="newbest" style="color:var(--acc);font-weight:800"></div>
+  <p id="ovtxt"></p><p id="earn" style="color:var(--acc);font-weight:700"></p>
+  <div class="row">
+    <button class="primary" id="nextlvl" data-i="nextlvl"></button><button class="primary" id="cont" data-i="cont"></button><button id="again" data-i="again"></button>
+    <button id="shareImg" data-i="share"></button><button id="chall" data-i="challenge"></button><button id="dbl" data-i="dbl"></button>
+    <button id="offerBtn" data-i="offer" style="background:#ff5c7a;color:#fff"></button>
+  </div></div></div>
+
 <div id="menu" class="modal"><div class="card">
-  <h2>🪙 <span id="coins">0</span></h2>
-  <p id="streak"></p>
+  <h2>🪙 <span id="coins">0</span></h2><p id="streakTxt"></p>
   <h3 data-i="missions"></h3><div id="missions"></div>
-  <h3 data-i="skins"></h3><div id="skins"></div>
+  <h3><span data-i="ach"></span> <span id="achCount"></span></h3><div id="achs"></div>
+  <h3 data-i="skins"></h3><div id="skins" class="grid2"></div>
   <h3 data-i="top"></h3><ol id="top"></ol><button id="gc" data-i="leaderboard" style="margin-top:8px"></button>
-  <h3 data-i="stats"></h3><div id="stats" style="margin-bottom:16px"></div>
-  <button class="primary" id="closeMenu" data-i="close"></button>
-</div></div>
+  <h3 data-i="stats"></h3><div id="stats"></div>
+  <div class="row"><button class="primary" data-close data-i="close"></button></div></div></div>
+
 <div id="shop" class="modal"><div class="card">
-  <h2>🛒 <span data-i="shop"></span></h2><p>🪙 <span id="shopCoins">0</span> · 🔨 <span id="invHam">0</span> · ↩️ <span id="invUndo">0</span></p>
+  <h2>🛒 <span data-i="shop"></span></h2><p id="shopInv"></p>
   <h3 data-i="premium"></h3><div id="iap"></div>
   <h3 data-i="withcoins"></h3><div id="coinshop"></div>
-  <div class="row" style="margin-top:16px"><button id="restore" data-i="restore"></button><button class="primary" id="closeShop" data-i="close"></button></div>
-</div></div>
+  <h3 data-i="themes"></h3><div id="themes"></div>
+  <div class="row"><button id="restore" data-i="restore"></button><button class="primary" data-close data-i="close"></button></div></div></div>
+
+<div id="pass" class="modal"><div class="card">
+  <h2>🎖️ <span data-i="pass"></span></h2><p id="passLvl"></p><div class="bar"><i id="passBar"></i></div>
+  <button class="primary" id="buyPass"></button>
+  <div class="tier" style="margin-top:12px"><b></b><small data-i="free"></small><small data-i="premiumTrack"></small></div>
+  <div id="passList"></div>
+  <div class="row"><button class="primary" data-close data-i="close"></button></div></div></div>
+
+<div id="chest" class="modal"><div class="card">
+  <h2>🎁 <span data-i="chest"></span></h2><p id="chestTxt"></p><div id="days"></div>
+  <div class="row"><button class="primary" id="claim" data-i="claim"></button><button id="claim2" data-i="dbl"></button></div></div></div>
+
+<div id="modes" class="modal"><div class="card">
+  <h2 data-i="modes"></h2><div class="modes" id="modeList"></div>
+  <div class="row"><button data-close data-i="close"></button></div></div></div>
+
+<div id="levels" class="modal"><div class="card">
+  <h2 data-i="levels"></h2><div id="lvls"></div>
+  <div class="row"><button data-close data-i="close"></button></div></div></div>
+
 <div id="opts" class="modal"><div class="card">
   <h2 data-i="options"></h2>
   <label class="opt"><span data-i="sound"></span><input type="checkbox" id="oSnd"></label>
   <label class="opt"><span data-i="volume"></span><input type="range" id="oVol" min="0" max="100"></label>
   <label class="opt"><span data-i="vibration"></span><input type="checkbox" id="oVib"></label>
+  <label class="opt"><span data-i="notif"></span><input type="checkbox" id="oNotif"></label>
   <label class="opt"><span data-i="language"></span><select id="oLang"></select></label>
-  <button class="primary" id="closeOpts" data-i="close" style="margin-top:16px"></button>
-</div></div>
-<script>
-(() => {
-const COLS = 5, ROWS = 7;
-const $ = id => document.getElementById(id);
-const cv = $('c'), ctx = cv.getContext('2d');
-let grid, cur, nxt, score, maxLv, busy, over, rng, daily = false, hoverCol = -1, cell = 60, dpr = 1;
-let undos, snap, fx = [], gs, hams, nextHam, hamMode, continued, startBest;
+  <h3 data-i="save"></h3>
+  <div class="row" style="margin-top:0"><button id="exportBtn" data-i="export"></button><button id="importBtn" data-i="import"></button></div>
+  <textarea id="code" spellcheck="false"></textarea>
+  <div class="row"><button id="privacy" data-i="privacy"></button><button class="primary" data-close data-i="close"></button></div></div></div>
 
-const store = {
-  get(k){ try { return +localStorage.getItem(k) || 0 } catch { return 0 } },
-  set(k,v){ try { localStorage.setItem(k, v) } catch {} },
-  json(k, d){ try { return JSON.parse(localStorage.getItem(k)) || d } catch { return d } }
-};
-const bestKey = () => daily ? 'ss_best_' + today() : 'ss_best';
-const today = () => new Date().toISOString().slice(0,10);
-function mulberry(a){ return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296 } }
-const seed = s => [...s].reduce((h,c) => Math.imul(h ^ c.charCodeAt(0), 16777619), 2166136261);
-const I18N = {
-  fr: {_: 'Français', score: 'Score', best: 'Record', classic: 'Classique', daily: 'Défi du jour', next: 'Suivant', over: 'Partie terminée',
-    newbest: '🏆 Nouveau record !', cont: 'Continuer', again: 'Rejouer', share: 'Partager', dbl: '📺 Doubler les pièces', missions: 'Missions du jour',
-    skins: 'Skins', close: 'Fermer', copied: 'Copié !', combo: 'Combo x{0}', newtile: '✨ Nouvelle tuile {0} !', m_tile: 'Atteins la tuile {0}',
-    m_combo: 'Fais un combo x{0}', m_score: 'Marque {0} points en une partie', m_merges: "Fusionne {0} fois aujourd'hui", equipped: 'Équipé',
-    choose: 'Choisir', notenough: 'Pas assez 🪙', hint1: 'Touchez une colonne pour lâcher la tuile', hint2: 'Les tuiles identiques fusionnent !',
-    hamhint: '🔨 Touchez une tuile à casser', besttile: 'Score {0} · meilleure tuile {1}', sharetxt: "J'ai fait {0} points sur Stack & Snap ! Tu fais mieux ?",
-    options: 'Options', sound: 'Son', volume: 'Volume', vibration: 'Vibrations', language: 'Langue',
-    shop: 'Boutique', noads: '🚫 Supprimer les pubs', noadsOk: '✅ Sans pub', restore: 'Restaurer les achats', top: 'Meilleurs scores', leaderboard: '🏆 Classement mondial', stats: 'Statistiques', st_games: 'Parties jouées', st_tile: 'Meilleure tuile', st_merges: 'Fusions', streak: '🔥 Série de {0} jour(s) ! +{1} 🪙', streakInfo: '🔥 Série : {0} jour(s)',
-    premium: 'Offres', withcoins: 'Avec des pièces', p_coins: '{0} pièces', p_starter: '⭐ Pack de démarrage', p_starter_d: '1000 🪙 + 5 🔨 + 5 ↩️ · une seule fois', p_noads_d: 'Plus de pubs entre les parties', buy_ham: '3 marteaux 🔨', buy_undo: '3 annulations ↩️', bought: '🎉 Merci pour votre achat !', owned: 'Acheté', best_value: 'Meilleure offre',
-    sk: ['Classique', 'Bonbons', 'Néon', 'Or & Nuit']},
-  en: {_: 'English', score: 'Score', best: 'Best', classic: 'Classic', daily: 'Daily challenge', next: 'Next', over: 'Game over',
-    newbest: '🏆 New record!', cont: 'Continue', again: 'Play again', share: 'Share', dbl: '📺 Double coins', missions: 'Daily missions',
-    skins: 'Skins', close: 'Close', copied: 'Copied!', combo: 'Combo x{0}', newtile: '✨ New tile {0}!', m_tile: 'Reach the {0} tile',
-    m_combo: 'Make a x{0} combo', m_score: 'Score {0} points in one game', m_merges: 'Merge {0} times today', equipped: 'Equipped',
-    choose: 'Select', notenough: 'Not enough 🪙', hint1: 'Tap a column to drop the tile', hint2: 'Matching tiles merge!',
-    hamhint: '🔨 Tap a tile to smash', besttile: 'Score {0} · best tile {1}', sharetxt: 'I scored {0} points in Stack & Snap! Can you beat it?',
-    options: 'Settings', sound: 'Sound', volume: 'Volume', vibration: 'Vibration', language: 'Language',
-    shop: 'Shop', noads: '🚫 Remove ads', noadsOk: '✅ Ad-free', restore: 'Restore purchases', top: 'Top scores', leaderboard: '🏆 Global leaderboard', stats: 'Statistics', st_games: 'Games played', st_tile: 'Best tile', st_merges: 'Merges', streak: '🔥 {0}-day streak! +{1} 🪙', streakInfo: '🔥 Streak: {0} day(s)',
-    premium: 'Offers', withcoins: 'With coins', p_coins: '{0} coins', p_starter: '⭐ Starter pack', p_starter_d: '1000 🪙 + 5 🔨 + 5 ↩️ · one time only', p_noads_d: 'No more ads between games', buy_ham: '3 hammers 🔨', buy_undo: '3 undos ↩️', bought: '🎉 Thanks for your purchase!', owned: 'Owned', best_value: 'Best value',
-    sk: ['Classic', 'Candy', 'Neon', 'Gold & Night']},
-  es: {_: 'Español', score: 'Puntos', best: 'Récord', classic: 'Clásico', daily: 'Reto diario', next: 'Siguiente', over: 'Fin de la partida',
-    newbest: '🏆 ¡Nuevo récord!', cont: 'Continuar', again: 'Otra vez', share: 'Compartir', dbl: '📺 Doblar monedas', missions: 'Misiones diarias',
-    skins: 'Aspectos', close: 'Cerrar', copied: '¡Copiado!', combo: 'Combo x{0}', newtile: '✨ ¡Nueva ficha {0}!', m_tile: 'Consigue la ficha {0}',
-    m_combo: 'Haz un combo x{0}', m_score: 'Consigue {0} puntos en una partida', m_merges: 'Fusiona {0} veces hoy', equipped: 'Equipado',
-    choose: 'Elegir', notenough: 'Faltan 🪙', hint1: 'Toca una columna para soltar la ficha', hint2: '¡Las fichas iguales se fusionan!',
-    hamhint: '🔨 Toca una ficha para romperla', besttile: 'Puntos {0} · mejor ficha {1}', sharetxt: '¡Hice {0} puntos en Stack & Snap! ¿Me superas?',
-    options: 'Opciones', sound: 'Sonido', volume: 'Volumen', vibration: 'Vibración', language: 'Idioma',
-    shop: 'Tienda', noads: '🚫 Quitar anuncios', noadsOk: '✅ Sin anuncios', restore: 'Restaurar compras', top: 'Mejores puntuaciones', leaderboard: '🏆 Clasificación mundial', stats: 'Estadísticas', st_games: 'Partidas jugadas', st_tile: 'Mejor ficha', st_merges: 'Fusiones', streak: '🔥 ¡Racha de {0} día(s)! +{1} 🪙', streakInfo: '🔥 Racha: {0} día(s)',
-    premium: 'Ofertas', withcoins: 'Con monedas', p_coins: '{0} monedas', p_starter: '⭐ Pack inicial', p_starter_d: '1000 🪙 + 5 🔨 + 5 ↩️ · solo una vez', p_noads_d: 'Sin anuncios entre partidas', buy_ham: '3 martillos 🔨', buy_undo: '3 deshacer ↩️', bought: '🎉 ¡Gracias por tu compra!', owned: 'Comprado', best_value: 'Mejor oferta',
-    sk: ['Clásico', 'Caramelo', 'Neón', 'Oro y Noche']},
-  de: {_: 'Deutsch', score: 'Punkte', best: 'Rekord', classic: 'Klassisch', daily: 'Tagesaufgabe', next: 'Nächste', over: 'Spiel vorbei',
-    newbest: '🏆 Neuer Rekord!', cont: 'Weiter', again: 'Nochmal', share: 'Teilen', dbl: '📺 Münzen verdoppeln', missions: 'Tägliche Missionen',
-    skins: 'Skins', close: 'Schließen', copied: 'Kopiert!', combo: 'Kombo x{0}', newtile: '✨ Neues Plättchen {0}!', m_tile: 'Erreiche das {0}-Plättchen',
-    m_combo: 'Schaffe eine x{0}-Kombo', m_score: 'Erziele {0} Punkte in einem Spiel', m_merges: 'Verschmilz heute {0}-mal', equipped: 'Aktiv',
-    choose: 'Wählen', notenough: 'Zu wenig 🪙', hint1: 'Tippe auf eine Spalte, um das Plättchen fallen zu lassen', hint2: 'Gleiche Plättchen verschmelzen!',
-    hamhint: '🔨 Tippe auf ein Plättchen zum Zerschlagen', besttile: 'Punkte {0} · bestes Plättchen {1}', sharetxt: 'Ich habe {0} Punkte in Stack & Snap! Schaffst du mehr?',
-    options: 'Einstellungen', sound: 'Ton', volume: 'Lautstärke', vibration: 'Vibration', language: 'Sprache',
-    shop: 'Shop', noads: '🚫 Werbung entfernen', noadsOk: '✅ Werbefrei', restore: 'Käufe wiederherstellen', top: 'Bestenliste', leaderboard: '🏆 Weltrangliste', stats: 'Statistik', st_games: 'Gespielte Spiele', st_tile: 'Bestes Plättchen', st_merges: 'Verschmelzungen', streak: '🔥 {0}-Tage-Serie! +{1} 🪙', streakInfo: '🔥 Serie: {0} Tag(e)',
-    premium: 'Angebote', withcoins: 'Mit Münzen', p_coins: '{0} Münzen', p_starter: '⭐ Starterpaket', p_starter_d: '1000 🪙 + 5 🔨 + 5 ↩️ · nur einmal', p_noads_d: 'Keine Werbung mehr zwischen Spielen', buy_ham: '3 Hämmer 🔨', buy_undo: '3× Rückgängig ↩️', bought: '🎉 Danke für deinen Kauf!', owned: 'Gekauft', best_value: 'Bestes Angebot',
-    sk: ['Klassisch', 'Bonbons', 'Neon', 'Gold & Nacht']},
-};
-const raw = (k, d) => { try { const v = localStorage.getItem(k); return v === null ? d : v } catch { return d } };
-let lang = raw('ss_lang', (navigator.language || 'en').slice(0, 2)); if (!I18N[lang]) lang = 'en';
-let volume = +raw('ss_vol', 80), noVib = raw('ss_novib', '0') === '1';
-const t = (k, ...a) => (I18N[lang][k] ?? I18N.en[k]).replace(/\{(\d)\}/g, (_, i) => a[i]);
-function applyLang(){
-  document.documentElement.lang = lang;
-  document.querySelectorAll('[data-i]').forEach(el => el.textContent = t(el.dataset.i));
-  $('mode').textContent = t(daily ? 'daily' : 'classic');
-}
-const vibrate = ms => { if (noVib) return; try { navigator.vibrate && navigator.vibrate(ms) } catch {} };
-let actx, muted = store.get('ss_mute') === 1;
-function tone(freq, dur = .12, type = 'sine', vol = .18, slide = 0, delay = 0){
-  if (muted || !volume) return;
-  vol *= volume / 100;
-  try {
-    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
-    if (actx.state === 'suspended') actx.resume();
-    const t = actx.currentTime + delay, o = actx.createOscillator(), g = actx.createGain();
-    o.type = type; o.frequency.setValueAtTime(freq, t);
-    if (slide) o.frequency.exponentialRampToValueAtTime(freq * slide, t + dur);
-    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.001, t + dur);
-    o.connect(g).connect(actx.destination); o.start(t); o.stop(t + dur);
-  } catch {}
-}
-const sfx = {
-  drop: () => tone(180, .09, 'triangle', .25, .5),
-  merge: (lv, combo) => { const f = 330 * 2 ** (((lv - 1) % 12) / 12) * (1 + (combo - 1) * .25);
-    tone(f, .14, 'triangle', .2); tone(f * 1.5, .18, 'sine', .12, 1, .05) },
-  over: () => [440, 370, 311, 220].forEach((f, i) => tone(f, .22, 'square', .07, 1, i * .15))
-};
-const sleep = ms => new Promise(r => setTimeout(r, ms));
-const label = lv => { const v = 2 ** lv; return v >= 1e6 ? (v/1048576|0)+'M' : v >= 1e4 ? (v/1024|0)+'K' : ''+v };
-const SKINS = [
-  {id:'classic', name:'Classique', price:0,   r:12, col: lv => `hsl(${(lv*47+200)%360} 72% ${lv%2?58:66}%)`},
-  {id:'candy',   name:'Bonbons',   price:150, r:24, col: lv => `hsl(${(lv*37+300)%360} 85% ${lv%2?72:80}%)`},
-  {id:'neon',    name:'Néon',      price:300, r:6,  col: lv => `hsl(${(lv*61+90)%360} 100% 55%)`},
-  {id:'gold',    name:'Or & Nuit', price:500, r:2,  col: lv => `hsl(${45-lv*2} 90% ${Math.max(52, 80-lv*2)}%)`},
-];
-let coins = store.get('ss_coins'), owned = store.json('ss_owned', ['classic']), skinId = raw('ss_skin', 'classic');
-const skin = () => SKINS.find(k => k.id === skinId) || SKINS[0];
-const color = lv => skin().col(lv);
-// Publicités récompensées : AdMob en natif (Capacitor), simulées sur le web
-const AD_IDS = {android: 'ca-app-pub-3940256099942544/5224354917', ios: 'ca-app-pub-3940256099942544/1712485313'}; // IDs de test Google
-const AD_INTER = {android: 'ca-app-pub-3940256099942544/1033173712', ios: 'ca-app-pub-3940256099942544/4411468910'};
-const native = () => !!window.Capacitor?.isNativePlatform?.();
-let noAds = raw('ss_noads', '0') === '1';
-const ads = {
-  async interstitial(){
-    const C = window.Capacitor, A = C?.Plugins?.AdMob; if (noAds || !A || !native()) return;
-    try { await A.initialize(); await A.prepareInterstitial({adId: AD_INTER[C.getPlatform()]}); await A.showInterstitial() } catch {}
-  },
-  async rewarded(){
-    const C = window.Capacitor, A = C?.Plugins?.AdMob;
-    if (noAds || !A || !native()) { await sleep(300); return true }
-    try { await A.initialize(); await A.prepareRewardVideoAd({adId: AD_IDS[C.getPlatform()]}); return !!(await A.showRewardVideoAd()) } catch { return false }
-  }
-};
-// Achat intégré « Sans pub » (cordova-plugin-purchase), simulé sur le web
-const IAP_ID = 'stacksnap_noads';
-function initIAP(){
-  const P = window.CdvPurchase; if (!P || !native() || initIAP.done) return; initIAP.done = true;
-  const {store: st, ProductType, Platform} = P, pf = window.Capacitor.getPlatform() === 'ios' ? Platform.APPLE_APPSTORE : Platform.GOOGLE_PLAY;
-  st.register(PRODUCTS.map(p => ({id: p.id, type: p.once ? ProductType.NON_CONSUMABLE : ProductType.CONSUMABLE, platform: pf})));
-  st.when().approved(tx => { tx.products.forEach(p => grant(p.id)); tx.finish() })
-    .productUpdated(pr => { if (pr.owned && PRODUCTS.find(p => p.id === pr.id)?.once) grant(pr.id, true) });
-  st.initialize([pf]);
-}
-document.addEventListener('deviceready', initIAP);
-function setNoAds(){ noAds = true; store.set('ss_noads', 1) }
-// Catalogue : prix réels lus depuis le store en natif, prix indicatifs sur le web
-let inv = store.json('ss_inv', {ham: 0, undo: 0}), granted = store.json('ss_granted', []);
-const PRODUCTS = [
-  {id: 'stacksnap_starter', once: true, best: true, price: '4,99 €', name: () => t('p_starter'), desc: () => t('p_starter_d'), give(){ coins += 1000; inv.ham += 5; inv.undo += 5 }},
-  {id: IAP_ID, once: true, price: '3,99 €', name: () => t('noads'), desc: () => t('p_noads_d'), give: setNoAds},
-  {id: 'stacksnap_coins_500', price: '0,99 €', name: () => t('p_coins', 500), give(){ coins += 500 }},
-  {id: 'stacksnap_coins_1500', price: '2,99 €', name: () => t('p_coins', 1500), give(){ coins += 1500 }},
-  {id: 'stacksnap_coins_5000', price: '7,99 €', name: () => t('p_coins', 5000), give(){ coins += 5000 }},
-];
-const COIN_ITEMS = [
-  {k: 'ham', cost: 200, name: () => t('buy_ham')},
-  {k: 'undo', cost: 200, name: () => t('buy_undo')},
-];
-function grant(id, silent){
-  const p = PRODUCTS.find(x => x.id === id); if (!p || (p.once && granted.includes(id))) return;
-  p.give(); if (p.once) granted.push(id);
-  save(); ui(); if ($('shop').style.display === 'flex') renderShop();
-  if (!silent) { toast(t('bought')); tone(660, .15); tone(880, .15, 'sine', .15, 1, .1); tone(1320, .3, 'sine', .12, 1, .2) }
-}
-function renderShop(){
-  $('shopCoins').textContent = coins; $('invHam').textContent = inv.ham; $('invUndo').textContent = inv.undo;
-  const st = (native() && window.CdvPurchase?.store) || null;
-  $('iap').innerHTML = PRODUCTS.map(p => { const has = p.once && granted.includes(p.id) || (p.id === IAP_ID && noAds);
-    return `<div class="item ${p.best && !has ? 'best' : ''}"><div>${p.best && !has ? `<span class="tag">${t('best_value')}</span>` : ''}<b>${p.name()}</b>${p.desc ? `<small>${p.desc()}</small>` : ''}</div>
-      <button class="primary" data-buy="${p.id}" ${has ? 'disabled' : ''}>${has ? t('owned') : (st?.get(p.id)?.pricing?.price || p.price)}</button></div>` }).join('');
-  $('coinshop').innerHTML = COIN_ITEMS.map(c => `<div class="item"><b>${c.name()}</b><button data-coin="${c.k}" ${coins < c.cost ? 'disabled' : ''}>${c.cost} 🪙</button></div>`).join('');
-}
-// Classement mondial : Game Center (iOS) / Play Games (Android) via @openforge/capacitor-game-connect
-const GC = () => native() && window.Capacitor.Plugins?.CapacitorGameConnect;
-const LB_ID = () => window.Capacitor?.getPlatform() === 'ios' ? 'stacksnap.highscore' : 'REMPLACER_PAR_ID_PLAY_GAMES';
-async function gcSubmit(sc){ try { const g = GC(); if (g) { await g.signIn(); await g.submitScore({leaderboardID: LB_ID(), totalScoreAmount: sc}) } } catch {} }
-let stats = store.json('ss_stats', {games: 0, tile: 1, merges: 0}), top = store.json('ss_top', []), streak = +raw('ss_streak', 0);
-function dailyLogin(){
-  const last = raw('ss_last', ''), yest = new Date(Date.now() - 864e5).toISOString().slice(0, 10);
-  if (last === today()) return;
-  streak = last === yest ? streak + 1 : 1;
-  const bonus = Math.min(streak, 7) * 10; coins += bonus;
-  store.set('ss_last', today()); store.set('ss_streak', streak); save();
-  setTimeout(() => toast(t('streak', streak, bonus)), 600);
-}
-// Missions du jour : 3 missions tirées de la date, identiques pour tous
-const MISSIONS = {
-  tile:   (g) => [t('m_tile', label(g)), () => maxLv],
-  combo:  (g) => [t('m_combo', g), () => gs.combo],
-  score:  (g) => [t('m_score', g), () => score],
-  merges: (g) => [t('m_merges', g), () => ms.merges],
-};
-let ms = store.json('ss_ms', {});
-function loadMissions(){
-  if (ms.date === today()) return;
-  const rr = mulberry(seed(today() + 'm')), pick = n => Math.floor(rr() * n);
-  const opts = [['tile', 7 + pick(3), 60], ['combo', 3 + pick(2), 50], ['score', 1000 * (2 + pick(4)), 60], ['merges', 30 + 10 * pick(4), 40]];
-  opts.splice(pick(4), 1);
-  ms = {date: today(), merges: 0, list: opts.map(([t, g, rw]) => ({t, g, r: rw, done: false}))};
-  save();
-}
-function checkMissions(){
-  for (const m of ms.list) if (!m.done) { const [txt, val] = MISSIONS[m.t](m.g);
-    if (val() >= m.g) { m.done = true; coins += m.r; toast(`🎯 ${txt} ! +${m.r} 🪙`); tone(660, .15); tone(990, .25, 'sine', .15, 1, .12); save() } }
-}
-function save(){
-  store.set('ss_coins', coins); store.set('ss_owned', JSON.stringify(owned));
-  store.set('ss_skin', skinId); store.set('ss_ms', JSON.stringify(ms));
-  store.set('ss_stats', JSON.stringify(stats)); store.set('ss_top', JSON.stringify(top));
-  store.set('ss_inv', JSON.stringify(inv)); store.set('ss_granted', JSON.stringify(granted));
-}
-function renderMenu(){
-  $('coins').textContent = coins; $('streak').textContent = t('streakInfo', streak);
-  $('top').innerHTML = top.map(x => `<li>${x.s} <small>${x.d}</small></li>`).join('') || '<li>—</li>';
-  $('gc').style.display = GC() ? '' : 'none';
-  $('stats').innerHTML = [[t('st_games'), stats.games], [t('st_tile'), label(stats.tile)], [t('st_merges'), stats.merges]]
-    .map(([a, b]) => `<div class="mi"><span>${a}</span><b>${b}</b></div>`).join('');
-  $('missions').innerHTML = ms.list.map(m => { const [txt, val] = MISSIONS[m.t](m.g);
-    return `<div class="mi ${m.done ? 'done' : ''}"><span>${txt}</span><b>${m.done ? '✅' : (m.t === 'tile' ? label(Math.min(val(), m.g)) + '/' + label(m.g) : Math.min(val(), m.g) + '/' + m.g) + ' · +' + m.r + '🪙'}</b></div>` }).join('');
-  $('skins').innerHTML = SKINS.map((k, i) => `<button class="sk ${k.id === skinId ? 'on' : ''}" data-k="${k.id}"><i style="background:${k.col(3)};border-radius:${k.r/2}px"></i>${I18N[lang].sk[i]}<small>${owned.includes(k.id) ? t(k.id === skinId ? 'equipped' : 'choose') : k.price + ' 🪙'}</small></button>`).join('');
-}
-
-function randLv(){
-  const top = Math.max(1, Math.min(maxLv - 1, 6));
-  const r = rng();
-  return 1 + Math.floor(r * r * top);         // biaisé vers les petites valeurs
-}
-function newGame(){
-  grid = Array.from({length: COLS}, () => []);
-  rng = daily ? mulberry(seed(today())) : Math.random;
-  score = 0; maxLv = 3; busy = false; over = false;
-  fx = []; gs = {combo: 0}; hams = 1; nextHam = 1500; undos = 1; snap = null; hamMode = false; continued = false; startBest = store.get(bestKey());
-  cur = randLv(); nxt = randLv();
-  $('over').style.display = 'none';
-  applyLang();
-  ui();
-}
-function ui(){
-  $('score').textContent = score;
-  const b = Math.max(store.get(bestKey()), score);
-  store.set(bestKey(), b); $('best').textContent = b;
-  while (score >= nextHam) { hams++; nextHam += 1500; tone(880, .2, 'sine', .15) }
-  loadMissions(); checkMissions();
-  $('coinsTop').textContent = coins;
-  document.documentElement.style.setProperty('--bg', `hsl(${(250 + (maxLv - 3) * 23) % 360} 32% 14%)`);
-  $('undo').textContent = '↩️ ' + (undos + inv.undo); $('undo').disabled = !(undos + inv.undo) || !snap || busy;
-  $('ham').textContent = '🔨 ' + (hams + inv.ham); $('ham').classList.toggle('on', hamMode);
-  drawTile($('n1').getContext('2d'), cur); drawTile($('n2').getContext('2d'), nxt);
-}
-function drawTile(g, lv){
-  g.clearRect(0,0,72,72); rrect(g, 4,4,64,64,skin().r*1.1, color(lv));
-  g.fillStyle = '#1b1830'; g.font = `800 ${label(lv).length > 3 ? 20 : 26}px system-ui`;
-  g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(label(lv), 36, 38);
-}
-function rrect(g,x,y,w,h,r,fill){ g.beginPath(); g.roundRect ? g.roundRect(x,y,w,h,r) : g.rect(x,y,w,h); g.fillStyle = fill; g.fill() }
-
-function neighbors(c, r){
-  return [[c-1,r],[c+1,r],[c,r-1],[c,r+1]].filter(([x,y]) => grid[x] && grid[x][y]);
-}
-function snapshot(){ snap = {g: grid.map(col => col.map(t => t.lv)), cur, nxt, score, maxLv, hams, nextHam} }
-function undo(){
-  if (busy || over || !(undos + inv.undo) || !snap) return;
-  undos ? undos-- : inv.undo--; save(); ({cur, nxt, score, maxLv, hams, nextHam} = snap);
-  grid = snap.g.map(col => col.map((lv, i) => ({lv, vy: i, s: 1.2, fresh: false})));
-  snap = null; tone(520, .15, 'sine', .15, .6); ui();
-}
-async function drop(c){
-  if (busy || over) return;
-  busy = true; snapshot();
-  grid[c].push({lv: cur, vy: ROWS + .5, s: 1, fresh: true});
-  cur = nxt; nxt = randLv(); ui(); vibrate(8); sfx.drop();
-  await sleep(140);
-  await resolve();
-  if (grid.some(col => col.length > ROWS)) return end();
-  busy = false; ui();
-}
-async function resolve(){
-  let combo = 0;
-  for (;;) {
-    let group = null, target = null;
-    outer: for (let c = 0; c < COLS; c++) for (let r = 0; r < grid[c].length; r++) {
-      const t = grid[c][r]; if (!t.fresh) continue;
-      const seen = new Set([t]), q = [[c,r]], g = [t];
-      while (q.length) { const [x,y] = q.pop();
-        for (const [nx,ny] of neighbors(x,y)) { const n = grid[nx][ny];
-          if (n.lv === t.lv && !seen.has(n)) { seen.add(n); g.push(n); q.push([nx,ny]) } } }
-      if (g.length > 1) { group = g; target = t; break outer }
-    }
-    if (!group) break;
-    combo++;
-    const before = new Map(); grid.forEach(col => col.forEach((t,i) => before.set(t,i)));
-    target.lv += group.length - 1; target.s = 1.35;
-    if (target.lv > maxLv && target.lv >= 6) toast(t('newtile', label(target.lv)));
-    maxLv = Math.max(maxLv, target.lv); gs.combo = Math.max(gs.combo, combo); ms.merges++; stats.merges++;
-    score += 2 ** target.lv * combo;
-    const dead = new Set(group.filter(t => t !== target));
-    for (let c = 0; c < COLS; c++) grid[c] = grid[c].filter(t => !dead.has(t));
-    grid.forEach(col => col.forEach((t,i) => t.fresh = t === target || before.get(t) !== i));
-    vibrate(combo > 1 ? [15,30,15] : 15); sfx.merge(target.lv, combo);
-    if (combo > 1) toast(t('combo', combo));
-    const tc = grid.findIndex(col => col.includes(target)), tr = grid[tc].indexOf(target);
-    burst(tc*cell + cell/2, cell*(ROWS+1) - (tr+.5)*cell, color(target.lv), '+' + 2 ** target.lv * combo);
-    ui();
-    await sleep(200);
-  }
-  grid.forEach(col => col.forEach(t => t.fresh = false));
-}
-function burst(x, y, col, txt){
-  for (let i = 0; i < 14; i++) { const a = Math.random()*6.28, v = 2 + Math.random()*4;
-    fx.push({x, y, vx: Math.cos(a)*v, vy: Math.sin(a)*v - 2, life: 1, col}) }
-  fx.push({x, y, txt, life: 1.2});
-}
-async function smash(e){
-  const b = cv.getBoundingClientRect(), c = colAt(e), rw = Math.floor((b.bottom - e.clientY) / (b.height / (ROWS+1)));
-  if (busy || !grid[c][rw]) return;
-  snapshot(); busy = true; hamMode = false; hams ? hams-- : inv.ham--; save();
-  const t = grid[c][rw]; burst(c*cell + cell/2, cell*(ROWS+1) - (rw+.5)*cell, color(t.lv));
-  grid[c].splice(rw, 1); grid[c].forEach((t, i) => t.fresh = i >= rw);
-  tone(120, .2, 'sawtooth', .15, .4); vibrate(30); ui();
-  await sleep(160); await resolve();
-  busy = false; ui();
-}
-function toast(txt){
-  const el = $('combo'); el.textContent = txt;
-  el.style.opacity = 1; el.style.transform = 'scale(1.15)';
-  clearTimeout(toast.t); toast.t = setTimeout(() => { el.style.opacity = 0; el.style.transform = 'scale(1)' }, 900);
-}
-function end(){
-  over = true; busy = false; hamMode = false; ui();
-  $('newbest').style.display = score > startBest && startBest > 0 ? 'block' : 'none';
-  $('cont').style.display = continued ? 'none' : '';
-  stats.games++; stats.tile = Math.max(stats.tile, maxLv);
-  top = [...top, {s: score, d: today()}].sort((a, b) => b.s - a.s).slice(0, 10);
-  gcSubmit(score); if (stats.games % 3 === 0) setTimeout(() => ads.interstitial(), 900);
-  const earned = Math.floor(score / 20); coins += earned; save(); ui();
-  $('earn').textContent = `+${earned} 🪙`; $('dbl').style.display = earned ? '' : 'none'; $('dbl').dataset.n = earned; vibrate([40,60,80]); sfx.over();
-  $('ovtxt').textContent = t('besttile', score, label(maxLv)) + (daily ? ' · ' + t('daily') : '');
-  setTimeout(() => $('over').style.display = 'flex', 400);
-}
-
-function resize(){
-  const b = $('board').getBoundingClientRect();
-  cell = Math.floor(Math.min(b.width / COLS, (b.height - 8) / (ROWS + 1)));
-  dpr = window.devicePixelRatio || 1;
-  cv.style.width = cell*COLS + 'px'; cv.style.height = cell*(ROWS+1) + 'px';
-  cv.width = cell*COLS*dpr; cv.height = cell*(ROWS+1)*dpr;
-}
-function frame(){
-  ctx.setTransform(dpr,0,0,dpr,0,0);
-  const W = cell*COLS, H = cell*(ROWS+1);
-  ctx.clearRect(0,0,W,H);
-  // zone de danger (ligne du haut)
-  const danger = grid.some(col => col.length >= ROWS - 1), pulse = danger ? .18 + .12 * Math.sin(Date.now() / 140) : .13;
-  ctx.fillStyle = `rgba(255,92,122,${pulse})`; ctx.fillRect(0,0,W,cell);
-  ctx.strokeStyle = '#ff5c7a'; ctx.setLineDash([6,6]); ctx.beginPath(); ctx.moveTo(0,cell); ctx.lineTo(W,cell); ctx.stroke(); ctx.setLineDash([]);
-  for (let c = 0; c < COLS; c++) {
-    rrect(ctx, c*cell+3, cell+3, cell-6, H-cell-6, 10, c === hoverCol && !busy ? '#ffffff14' : '#ffffff08');
-    grid[c].forEach((t, r) => {
-      t.vy += (r - t.vy) * .35; t.s += (1 - t.s) * .2;
-      const y = H - (t.vy + 1) * cell, sz = (cell - 8) * t.s, o = (cell - sz) / 2;
-      rrect(ctx, c*cell+o, y+o, sz, sz, skin().r*cell/60*t.s, color(t.lv));
-      const L = label(t.lv);
-      ctx.fillStyle = '#1b1830'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.font = `800 ${cell * (L.length > 3 ? .3 : .38) * t.s}px system-ui`;
-      ctx.fillText(L, c*cell + cell/2, y + cell/2 + 1);
-    });
-  }
-  if (hoverCol >= 0 && !busy && !over && !hamMode) { ctx.globalAlpha = .35;
-    rrect(ctx, hoverCol*cell+4, 4, cell-8, cell-8, skin().r*cell/60, color(cur)); ctx.globalAlpha = 1 }
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  fx = fx.filter(p => (p.life -= .025) > 0);
-  for (const p of fx) {
-    ctx.globalAlpha = Math.min(1, p.life);
-    if (p.txt) { p.y -= 1.2; ctx.fillStyle = '#fff'; ctx.font = `800 ${cell*.32}px system-ui`; ctx.fillText(p.txt, p.x, p.y) }
-    else { p.x += p.vx; p.y += p.vy; p.vy += .25; ctx.fillStyle = p.col; ctx.fillRect(p.x-3, p.y-3, 6, 6) }
-  }
-  ctx.globalAlpha = 1;
-  if (!score && grid.every(col => !col.length)) { ctx.fillStyle = '#a9a2cc'; ctx.font = `600 ${cell*.26}px system-ui`;
-    ctx.fillText(t('hint1'), W/2, H/2); ctx.fillText(t('hint2'), W/2, H/2 + cell*.4) }
-  if (hamMode) { ctx.fillStyle = '#ffcf5c'; ctx.font = `700 ${cell*.26}px system-ui`; ctx.fillText(t('hamhint'), W/2, cell/2) }
-  requestAnimationFrame(frame);
-}
-const colAt = e => { const r = cv.getBoundingClientRect(); return Math.max(0, Math.min(COLS-1, Math.floor((e.clientX - r.left) / (r.width / COLS)))) };
-cv.addEventListener('pointermove', e => hoverCol = colAt(e));
-cv.addEventListener('pointerleave', () => hoverCol = -1);
-cv.addEventListener('pointerdown', e => hamMode ? smash(e) : drop(colAt(e)));
-$('oLang').innerHTML = Object.entries(I18N).map(([k, v]) => `<option value="${k}">${v._}</option>`).join('');
-$('optBtn').onclick = () => { if (busy) return; $('oSnd').checked = !muted; $('oVol').value = volume; $('oVib').checked = !noVib; $('oLang').value = lang; $('opts').style.display = 'flex' };
-$('closeOpts').onclick = () => $('opts').style.display = 'none';
-$('oSnd').onchange = e => { muted = !e.target.checked; store.set('ss_mute', muted ? 1 : 0); sfx.drop() };
-$('oVol').onchange = e => { volume = +e.target.value; store.set('ss_vol', volume); sfx.drop() };
-$('oVib').onchange = e => { noVib = !e.target.checked; store.set('ss_novib', noVib ? 1 : 0); vibrate(30) };
-$('oLang').onchange = e => { lang = e.target.value; store.set('ss_lang', lang); applyLang() };
-$('again').onclick = newGame;
-// « Continuer » : une fois par partie (emplacement pour une pub récompensée)
-$('cont').onclick = async () => { if (!(await ads.rewarded())) return; continued = true; over = false; grid.forEach(col => col.splice(-3)); $('over').style.display = 'none'; tone(523, .15); tone(784, .2, 'sine', .15, 1, .1); ui() };
-$('dbl').onclick = async () => { if (!(await ads.rewarded())) return; coins += +$('dbl').dataset.n; save(); ui();
-  $('earn').textContent = `+${$('dbl').dataset.n * 2} 🪙`; $('dbl').style.display = 'none' };
-$('menuBtn').onclick = () => { if (busy) return; renderMenu(); $('menu').style.display = 'flex' };
-$('closeMenu').onclick = () => $('menu').style.display = 'none';
-$('skins').onclick = e => { const b = e.target.closest('[data-k]'); if (!b) return; const k = SKINS.find(s => s.id === b.dataset.k);
-  if (!owned.includes(k.id)) { if (coins < k.price) { b.querySelector('small').textContent = t('notenough'); return } coins -= k.price; owned.push(k.id); tone(784, .2) }
-  skinId = k.id; save(); renderMenu(); ui() };
-$('undo').onclick = undo;
-$('shopBtn').onclick = () => { if (busy) return; renderShop(); $('shop').style.display = 'flex' };
-$('closeShop').onclick = () => $('shop').style.display = 'none';
-$('iap').onclick = async e => { const b = e.target.closest('[data-buy]'); if (!b) return; const P = window.CdvPurchase;
-  if (P && native()) P.store.get(b.dataset.buy)?.getOffer()?.order(); else { b.disabled = true; await sleep(400); grant(b.dataset.buy) } };
-$('coinshop').onclick = e => { const b = e.target.closest('[data-coin]'); if (!b) return; const c = COIN_ITEMS.find(x => x.k === b.dataset.coin);
-  if (coins < c.cost) return; coins -= c.cost; inv[c.k] += 3; save(); ui(); renderShop(); tone(784, .2) };
-$('restore').onclick = () => { try { window.CdvPurchase?.store.restorePurchases() } catch {} };
-$('gc').onclick = async () => { try { const g = GC(); await g.signIn(); await g.showLeaderboard({leaderboardID: LB_ID()}) } catch {} };
-$('ham').onclick = () => { if (busy || over || !(hams + inv.ham)) return; hamMode = !hamMode; ui() };
-$('mode').onclick = () => { if (busy) return; daily = !daily; newGame() };
-$('share').onclick = async () => {
-  const text = t('sharetxt', score) + (daily ? ` (${t('daily')} ${today()})` : '');
-  try { if (navigator.share) await navigator.share({text}); else { await navigator.clipboard.writeText(text); $('share').textContent = t('copied') } } catch {}
-};
-addEventListener('resize', resize);
-resize(); newGame(); frame(); dailyLogin(); ui(); initIAP();
-if ('serviceWorker' in navigator && !native() && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
-})();
-</script>
+<script src="i18n.js"></script>
+<script src="game.js"></script>
 </body>
 </html>

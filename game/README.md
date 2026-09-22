@@ -21,10 +21,31 @@ npm run android          # ou: npm run ios
 Publiez ensuite avec Android Studio (Play Console) ou Xcode (App Store Connect).
 
 ## Contenu
-- Sons synthétisés (Web Audio), bouton muet
-- Marteau (casser une tuile), « Continuer » et « Doubler les pièces » via pub récompensée
-- Pièces 🪙, 4 skins à débloquer, 3 missions du jour (identiques pour tous)
-- Fond qui change de couleur à chaque nouvelle tuile record
+- **5 modes** : Classique, Défi du jour, Contre la montre (2 min), Zen (sans game over), Puzzle (50 niveaux, 3 étoiles)
+- **Tuiles spéciales** : 💣 bombe (détruit un carré 3×3), 🌈 joker (copie la plus grande voisine), ❄️ glace (bloque 3 coups)
+- **Bonus** : 🔨 marteau, ↩️ annuler, 🔀 mélanger, échange de tuile (toucher l'aperçu « Suivant »)
+- **Rétention** : tutoriel interactif, coffre quotidien (7 jours), missions du jour, 22 succès, pass de saison (30 paliers gratuit + premium), rappels par notification
+- **Monétisation** : pubs récompensées + interstitielles (AdMob), boutique (packs de pièces, pack de démarrage, sans pub, pass premium, offre flash 24 h), thèmes (fonds, sons, particules)
+- **Social** : partage du score en image, lien « Défier un ami » (même partie via `?c=graine&s=score`), classement mondial
+- **Technique** : 9 langues (FR, EN, ES, DE, PT, IT, JA, KO, TR), sauvegarde par code de transfert, Firebase Analytics, consentement RGPD/ATT, PWA hors ligne
+
+## Structure
+- `www/index.html` : interface et styles · `www/i18n.js` : traductions · `www/game.js` : logique du jeu
+- `store/` : fiche store (`listing.md`) et captures d'écran
+
+## Notifications, vibrations, statistiques
+- `@capacitor/local-notifications` : rappel quotidien à 19 h et alerte de série à 21 h 30 (désactivables dans les options).
+- `@capacitor/haptics` : retour haptique natif (iOS inclus).
+- `@capacitor-firebase/analytics` : ajoutez `google-services.json` (Android, `android/app/`) et `GoogleService-Info.plist` (iOS, `ios/App/App/`) depuis la console Firebase. Événements envoyés : `app_open`, `game_start`, `game_over`, `tutorial_complete`, `level_complete`, `purchase`, `achievement`, `chest`, `shop_open`.
+
+## RGPD et suivi publicitaire
+Au premier lancement, le formulaire de consentement Google (UMP) s'affiche en Europe, puis la demande de suivi Apple (ATT) sur iOS. Le bouton « Confidentialité » des options permet de le rouvrir.
+- Configurez le message RGPD dans AdMob → Confidentialité et messages.
+- iOS : ajoutez `NSUserTrackingUsageDescription` dans `Info.plist`.
+- Remplacez `PRIVACY_URL` et `GAME_URL` en haut de `www/game.js`.
+
+## Sauvegarde
+La progression est stockée sur l'appareil. Options → « Copier mon code » génère un code de transfert, à coller sur le nouvel appareil puis « Restaurer ». Une vraie sauvegarde cloud automatique nécessite un serveur (par ex. Firebase Auth + Firestore).
 
 ## Publicités (AdMob)
 Le plugin `@capacitor-community/admob` est utilisé automatiquement dans l'app native ; sur le web, les pubs sont simulées.
@@ -32,7 +53,7 @@ Le plugin `@capacitor-community/admob` est utilisé automatiquement dans l'app n
 2. Android : dans `android/app/src/main/AndroidManifest.xml`, sous `<application>` :
    `<meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-XXX~YYY"/>`
 3. iOS : dans `ios/App/App/Info.plist`, ajoutez `GADApplicationIdentifier` = votre App ID.
-4. Remplacez les IDs de test dans `AD_IDS` (`www/index.html`) par vos IDs de production.
+4. Remplacez les IDs de test dans `AD` (`www/game.js`) par vos IDs de production.
 
 ## Boutique et achats intégrés (cordova-plugin-purchase)
 Créez ces produits avec les mêmes IDs dans App Store Connect et dans la Play Console :
@@ -44,6 +65,8 @@ Créez ces produits avec les mêmes IDs dans App Store Connect et dans la Play C
 | `stacksnap_coins_500` | consommable | 0,99 € | 500 🪙 |
 | `stacksnap_coins_1500` | consommable | 2,99 € | 1500 🪙 |
 | `stacksnap_coins_5000` | consommable | 7,99 € | 5000 🪙 |
+| `stacksnap_pass_s1` | non consommable | 4,99 € | Pass premium saison 1 |
+| `stacksnap_offer` | non consommable | 1,99 € | Offre flash : 2000 🪙 + 10 🔨 + 5 🔀 |
 
 Les prix affichés dans l'app sont ceux du store, dans la devise du joueur. Sur le web, les achats sont simulés.
 
@@ -53,7 +76,7 @@ Les prix affichés dans l'app sont ceux du store, dans la devise du joueur. Sur 
 
 ## Classement mondial (@openforge/capacitor-game-connect)
 - iOS : activez Game Center dans Xcode et créez le classement `stacksnap.highscore` dans App Store Connect.
-- Android : créez un classement dans Play Games Services, puis remplacez `REMPLACER_PAR_ID_PLAY_GAMES` dans `www/index.html`.
+- Android : créez un classement dans Play Games Services, puis remplacez `REMPLACER_PAR_ID_PLAY_GAMES` dans `www/game.js`.
 - Hors application native, le jeu affiche un top 10 local.
 
 ## Icône et écran de lancement
