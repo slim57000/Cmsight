@@ -20,6 +20,8 @@ button.primary{background:var(--acc);color:#2a2000;font-weight:700}
 #next canvas{width:36px;height:36px}
 #board{flex:1;position:relative;display:flex;align-items:center;justify-content:center;min-height:0}
 #c{touch-action:none}
+#ham.on{background:var(--acc);color:#2a2000}
+#newbest{color:var(--acc);font-weight:800;display:none}
 #combo{position:absolute;top:8px;left:0;right:0;text-align:center;font-weight:800;font-size:28px;color:var(--acc);opacity:0;transition:opacity .2s,transform .2s;pointer-events:none}
 #over{position:fixed;inset:0;background:#0009;display:none;align-items:center;justify-content:center;padding:16px}
 #over .card{background:var(--panel);border-radius:20px;padding:24px;text-align:center;max-width:320px;width:100%}
@@ -34,13 +36,14 @@ button.primary{background:var(--acc);color:#2a2000;font-weight:700}
     <button id="mode">Classique</button>
     <div class="stat"><small>Record</small><b id="best">0</b></div>
   </header>
-  <div id="next">Suivant <canvas id="n1" width="72" height="72"></canvas><canvas id="n2" width="72" height="72" style="opacity:.5;width:28px;height:28px"></canvas><button id="snd" aria-label="Son" style="padding:6px 10px">🔊</button></div>
+  <div id="next">Suivant <canvas id="n1" width="72" height="72"></canvas><canvas id="n2" width="72" height="72" style="opacity:.5;width:28px;height:28px"></canvas><button id="ham" style="padding:6px 10px">🔨 1</button><button id="snd" aria-label="Son" style="padding:6px 10px">🔊</button></div>
   <div id="board"><canvas id="c"></canvas><div id="combo"></div></div>
 </div>
 <div id="over"><div class="card">
   <h2>Partie terminée</h2>
+  <div id="newbest">🏆 Nouveau record !</div>
   <p id="ovtxt"></p>
-  <div class="row"><button class="primary" id="again">Rejouer</button><button id="share">Partager</button></div>
+  <div class="row"><button class="primary" id="cont">Continuer</button><button id="again">Rejouer</button><button id="share">Partager</button></div>
 </div></div>
 <script>
 (() => {
@@ -48,6 +51,7 @@ const COLS = 5, ROWS = 7;
 const $ = id => document.getElementById(id);
 const cv = $('c'), ctx = cv.getContext('2d');
 let grid, cur, nxt, score, maxLv, busy, over, rng, daily = false, hoverCol = -1, cell = 60, dpr = 1;
+let fx = [], hams, nextHam, hamMode, continued, startBest;
 
 const store = {
   get(k){ try { return +localStorage.getItem(k) || 0 } catch { return 0 } },
@@ -90,6 +94,7 @@ function newGame(){
   grid = Array.from({length: COLS}, () => []);
   rng = daily ? mulberry(seed(today())) : Math.random;
   score = 0; maxLv = 3; busy = false; over = false;
+  fx = []; hams = 1; nextHam = 1500; hamMode = false; continued = false; startBest = store.get(bestKey());
   cur = randLv(); nxt = randLv();
   $('over').style.display = 'none';
   $('mode').textContent = daily ? 'Défi du jour' : 'Classique';
@@ -99,6 +104,8 @@ function ui(){
   $('score').textContent = score;
   const b = Math.max(store.get(bestKey()), score);
   store.set(bestKey(), b); $('best').textContent = b;
+  while (score >= nextHam) { hams++; nextHam += 1500; tone(880, .2, 'sine', .15) }
+  $('ham').textContent = '🔨 ' + hams; $('ham').classList.toggle('on', hamMode);
   drawTile($('n1').getContext('2d'), cur); drawTile($('n2').getContext('2d'), nxt);
 }
 function drawTile(g, lv){
@@ -144,10 +151,27 @@ async function resolve(){
     grid.forEach(col => col.forEach((t,i) => t.fresh = t === target || before.get(t) !== i));
     vibrate(combo > 1 ? [15,30,15] : 15); sfx.merge(target.lv, combo);
     if (combo > 1) showCombo(combo);
+    const tc = grid.findIndex(col => col.includes(target)), tr = grid[tc].indexOf(target);
+    burst(tc*cell + cell/2, cell*(ROWS+1) - (tr+.5)*cell, color(target.lv), '+' + 2 ** target.lv * combo);
     ui();
     await sleep(200);
   }
   grid.forEach(col => col.forEach(t => t.fresh = false));
+}
+function burst(x, y, col, txt){
+  for (let i = 0; i < 14; i++) { const a = Math.random()*6.28, v = 2 + Math.random()*4;
+    fx.push({x, y, vx: Math.cos(a)*v, vy: Math.sin(a)*v - 2, life: 1, col}) }
+  fx.push({x, y, txt, life: 1.2});
+}
+async function smash(e){
+  const b = cv.getBoundingClientRect(), c = colAt(e), rw = Math.floor((b.bottom - e.clientY) / (b.height / (ROWS+1)));
+  if (busy || !grid[c][rw]) return;
+  busy = true; hamMode = false; hams--;
+  const t = grid[c][rw]; burst(c*cell + cell/2, cell*(ROWS+1) - (rw+.5)*cell, color(t.lv));
+  grid[c].splice(rw, 1); grid[c].forEach((t, i) => t.fresh = i >= rw);
+  tone(120, .2, 'sawtooth', .15, .4); vibrate(30); ui();
+  await sleep(160); await resolve();
+  busy = false; ui();
 }
 function showCombo(n){
   const el = $('combo'); el.textContent = 'Combo x' + n;
@@ -155,7 +179,9 @@ function showCombo(n){
   clearTimeout(showCombo.t); showCombo.t = setTimeout(() => { el.style.opacity = 0; el.style.transform = 'scale(1)' }, 600);
 }
 function end(){
-  over = true; busy = false; ui(); vibrate([40,60,80]); sfx.over();
+  over = true; busy = false; hamMode = false; ui();
+  $('newbest').style.display = score > startBest && startBest > 0 ? 'block' : 'none';
+  $('cont').style.display = continued ? 'none' : ''; vibrate([40,60,80]); sfx.over();
   $('ovtxt').textContent = `Score ${score} · meilleure tuile ${label(maxLv)}` + (daily ? ' · Défi du jour' : '');
   setTimeout(() => $('over').style.display = 'flex', 400);
 }
@@ -186,15 +212,29 @@ function frame(){
       ctx.fillText(L, c*cell + cell/2, y + cell/2 + 1);
     });
   }
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  fx = fx.filter(p => (p.life -= .025) > 0);
+  for (const p of fx) {
+    ctx.globalAlpha = Math.min(1, p.life);
+    if (p.txt) { p.y -= 1.2; ctx.fillStyle = '#fff'; ctx.font = `800 ${cell*.32}px system-ui`; ctx.fillText(p.txt, p.x, p.y) }
+    else { p.x += p.vx; p.y += p.vy; p.vy += .25; ctx.fillStyle = p.col; ctx.fillRect(p.x-3, p.y-3, 6, 6) }
+  }
+  ctx.globalAlpha = 1;
+  if (!score && grid.every(col => !col.length)) { ctx.fillStyle = '#a9a2cc'; ctx.font = `600 ${cell*.26}px system-ui`;
+    ctx.fillText('Touchez une colonne pour lâcher la tuile', W/2, H/2); ctx.fillText('Les tuiles identiques fusionnent !', W/2, H/2 + cell*.4) }
+  if (hamMode) { ctx.fillStyle = '#ffcf5c'; ctx.font = `700 ${cell*.26}px system-ui`; ctx.fillText('🔨 Touchez une tuile à casser', W/2, cell/2) }
   requestAnimationFrame(frame);
 }
 const colAt = e => { const r = cv.getBoundingClientRect(); return Math.max(0, Math.min(COLS-1, Math.floor((e.clientX - r.left) / (r.width / COLS)))) };
 cv.addEventListener('pointermove', e => hoverCol = colAt(e));
 cv.addEventListener('pointerleave', () => hoverCol = -1);
-cv.addEventListener('pointerdown', e => drop(colAt(e)));
+cv.addEventListener('pointerdown', e => hamMode ? smash(e) : drop(colAt(e)));
 const sndBtn = $('snd'), sndUi = () => sndBtn.textContent = muted ? '🔇' : '🔊'; sndUi();
 sndBtn.onclick = () => { muted = !muted; store.set('ss_mute', muted ? 1 : 0); sndUi(); sfx.drop() };
 $('again').onclick = newGame;
+// « Continuer » : une fois par partie (emplacement pour une pub récompensée)
+$('cont').onclick = () => { continued = true; over = false; grid.forEach(col => col.splice(-3)); $('over').style.display = 'none'; tone(523, .15); tone(784, .2, 'sine', .15, 1, .1); ui() };
+$('ham').onclick = () => { if (busy || over || !hams) return; hamMode = !hamMode; ui() };
 $('mode').onclick = () => { if (busy) return; daily = !daily; newGame() };
 $('share').onclick = async () => {
   const text = `J'ai fait ${score} points sur Stack & Snap${daily ? ' (Défi du jour ' + today() + ')' : ''} ! Tu fais mieux ?`;
