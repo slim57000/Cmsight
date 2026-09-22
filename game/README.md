@@ -34,8 +34,20 @@ Le plugin `@capacitor-community/admob` est utilisé automatiquement dans l'app n
 3. iOS : dans `ios/App/App/Info.plist`, ajoutez `GADApplicationIdentifier` = votre App ID.
 4. Remplacez les IDs de test dans `AD_IDS` (`www/index.html`) par vos IDs de production.
 
-## Achat « Sans pub » (cordova-plugin-purchase)
-1. Créez un produit **non consommable** `stacksnap_noads` dans App Store Connect et dans la Play Console.
+## Boutique et achats intégrés (cordova-plugin-purchase)
+Créez ces produits avec les mêmes IDs dans App Store Connect et dans la Play Console :
+
+| ID | Type | Prix conseillé | Contenu |
+|---|---|---|---|
+| `stacksnap_starter` | non consommable | 4,99 € | 1000 🪙 + 5 🔨 + 5 ↩️ |
+| `stacksnap_noads` | non consommable | 3,99 € | Supprime les pubs |
+| `stacksnap_coins_500` | consommable | 0,99 € | 500 🪙 |
+| `stacksnap_coins_1500` | consommable | 2,99 € | 1500 🪙 |
+| `stacksnap_coins_5000` | consommable | 7,99 € | 5000 🪙 |
+
+Les prix affichés dans l'app sont ceux du store, dans la devise du joueur. Sur le web, les achats sont simulés.
+
+1. Le produit « Sans pub » :
 2. Il supprime les pubs interstitielles (1 toutes les 3 parties) et donne les récompenses sans regarder de pub.
 3. Le bouton « Restaurer les achats » est obligatoire pour la validation Apple (déjà présent).
 
