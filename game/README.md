@@ -3,7 +3,7 @@
 Puzzle « drop & merge » jouable d'une main. Touchez une colonne pour lâcher la tuile. Les tuiles identiques qui se touchent fusionnent (2+2 → 4, trois 2 → 8…) et déclenchent des combos. Si une colonne dépasse la ligne rouge, la partie est perdue.
 
 - **Modes** : Classique (aléatoire) et Défi du jour (même suite de tuiles pour tout le monde, record par jour).
-- **Technique** : un seul fichier HTML5 Canvas (`www/index.html`), sans dépendance, 60 fps, avec vibrations et partage du score.
+- **Technique** : HTML5 Canvas sans dépendance (`www/`), 60 fps, emballé en app native avec Capacitor.
 
 ## Tester dans le navigateur
 ```
