@@ -40,3 +40,27 @@ set a real signing configuration:
 
 To point the app at a different URL (e.g. staging), change `kAppUrl` in
 `lib/main.dart`.
+
+## Meta (Facebook) App Events
+
+The app reports install/launch events to Meta via
+[`facebook_app_events`](https://pub.dev/packages/facebook_app_events), for ad
+attribution in Meta Ads Manager. This is wired up but disabled until you
+supply real credentials:
+
+1. Create/select an app at [developers.facebook.com](https://developers.facebook.com/apps/)
+   and grab its **App ID** and **Client Token** (Settings > Advanced >
+   Client Token).
+2. Replace `REPLACE_WITH_FACEBOOK_APP_ID` / `REPLACE_WITH_FACEBOOK_CLIENT_TOKEN` in:
+   - `android/app/src/main/res/values/strings.xml`
+   - `ios/Runner/Info.plist` (`FacebookAppID`, `FacebookClientToken`, and the
+     `fb<APP_ID>` URL scheme under `CFBundleURLTypes`)
+3. On Android, add your app's key hash (debug and release keystores) to the
+   Facebook app's Android settings — see
+   [Get Started with the Facebook SDK for Android](https://developers.facebook.com/docs/android/getting-started).
+4. On iOS, no extra Xcode changes are needed beyond `Info.plist`: the plugin
+   registers itself for both the legacy `UIApplicationDelegate` and the
+   `UIScene` lifecycle.
+
+Without real values, `activateApp()` (called on startup in `lib/main.dart`)
+is a no-op and no events reach Meta.

@@ -1,9 +1,17 @@
+import 'package:facebook_app_events/facebook_app_events.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 const String kAppUrl = 'https://www.app.sunset-app.fr/web';
 
+final FacebookAppEvents facebookAppEvents = FacebookAppEvents();
+
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  // Reports the app launch to Meta App Events, for install/ad attribution.
+  // Requires facebook_app_id / facebook_client_token to be set (see
+  // android/app/src/main/res/values/strings.xml and ios/Runner/Info.plist).
+  facebookAppEvents.activateApp();
   runApp(const SunsetApp());
 }
 
