@@ -185,8 +185,8 @@ function grant(id, silent){
 }
 async function buy(id){
   const P = window.CdvPurchase;
-  if (P && native()) P.store.get(id)?.getOffer()?.order();
-  else { await sleep(400); grant(id) } // simulation web
+  if (native()) { P?.store.get(id)?.getOffer()?.order(); return } // en natif, jamais d'achat gratuit
+  await sleep(400); grant(id); // simulation web uniquement
 }
 
 // ---------- Classement mondial (Game Center / Play Games)
