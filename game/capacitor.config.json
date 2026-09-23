@@ -6,7 +6,7 @@
     "FirebaseAuthentication": {
       "skipNativeAuth": false,
       "providers": [
-        "gamecenter.apple.com",
+        "gc.apple.com",
         "playgames.google.com"
       ]
     }

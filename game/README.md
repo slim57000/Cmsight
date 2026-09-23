@@ -92,10 +92,8 @@ Les prix affichés dans l'app sont ceux du store, dans la devise du joueur. Sur 
 2. Il supprime les pubs interstitielles (1 toutes les 3 parties) et donne les récompenses sans regarder de pub.
 3. Le bouton « Restaurer les achats » est obligatoire pour la validation Apple (déjà présent).
 
-## Classement mondial (@openforge/capacitor-game-connect)
-- iOS : activez Game Center dans Xcode et créez le classement `stacksnap.highscore` dans App Store Connect.
-- Android : créez un classement dans Play Games Services, puis remplacez `REMPLACER_PAR_ID_PLAY_GAMES` dans `www/game.js`.
-- Hors application native, le jeu affiche un top 10 local.
+## Classement mondial
+Stocké dans Firestore (`scores/{uid}`), commun à iOS et Android : le meilleur score Classique de chaque joueur y est envoyé, et le menu 🪙 affiche le top 20. Le pseudo est celui de Game Center / Play Jeux (ou « 🎮 xxxxx » à défaut).
 
 ## Icône et écran de lancement
 Les fichiers sources sont `assets/icon.svg`, `assets/icon-only.png` et `assets/splash.png`. Ensuite :
@@ -105,3 +103,25 @@ npm run assets && npm run sync
 
 ## Web / PWA
 `manifest.json` et `sw.js` rendent la version web installable et jouable hors ligne.
+
+## Compilation automatique (GitHub Actions)
+Deux workflows compilent le jeu à chaque push touchant `game/` (ou à la demande depuis l'onglet **Actions** → *Run workflow*) :
+- **Stack & Snap · Android** (`.github/workflows/game-android.yml`) : produit un **APK de test** à installer directement sur un téléphone (onglet Actions → le run → *Artifacts*), et un **AAB signé** pour le Play Store si le keystore est configuré.
+- **Stack & Snap · iOS** (`.github/workflows/game-ios.yml`, Mac fourni par GitHub) : sans clé Apple, vérifie seulement que l'app compile ; avec la clé, **signe et envoie la build sur TestFlight**.
+
+La préparation native (plist, manifest, Game Center, iPhone uniquement, versions…) est scriptée dans `ci/android.sh` et `ci/ios.sh` : aucun Xcode ni Android Studio n'est nécessaire.
+
+### Secrets à ajouter (GitHub → Settings → Secrets and variables → Actions)
+| Secret | Obligatoire | Contenu |
+|---|---|---|
+| `GOOGLE_SERVICES_JSON` | Android | `google-services.json` encodé en base64 (`base64 -w0 google-services.json`) |
+| `GOOGLE_SERVICE_INFO_PLIST` | iOS | `GoogleService-Info.plist` encodé en base64 (`base64 -i GoogleService-Info.plist`) |
+| `APPSTORE_API_KEY_P8` | TestFlight | Contenu du fichier `.p8` (App Store Connect → Utilisateurs et accès → Intégrations → clé API, rôle **Admin**) |
+| `APPSTORE_API_KEY_ID` | TestFlight | ID de la clé (10 caractères) |
+| `APPSTORE_ISSUER_ID` | TestFlight | Issuer ID affiché au-dessus des clés |
+| `APPLE_TEAM_ID` | TestFlight | Team ID (developer.apple.com → Membership) |
+| `ANDROID_KEYSTORE_BASE64` | Play Store | Keystore de signature en base64 (créé avec `keytool -genkey -v -keystore release.jks -alias stacksnap -keyalg RSA -keysize 2048 -validity 10000`) |
+| `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD` | Play Store | Mots de passe et alias du keystore — **gardez une copie du keystore en lieu sûr** |
+| `ADMOB_APP_ID_ANDROID`, `ADMOB_APP_ID_IOS` | Non | App IDs AdMob réels (sinon IDs de test) |
+
+Avant le premier envoi TestFlight : créez l'app dans App Store Connect avec l'ID `com.stacksnap.game` et activez **Game Center** sur cet identifiant (developer.apple.com → Identifiers).

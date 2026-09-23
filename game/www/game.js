@@ -40,7 +40,7 @@ function save(){ // horodate seulement les vrais changements, puis planifie l'en
 }
 
 // ---------- Sauvegarde cloud (Firebase Auth + Firestore), liée au compte Game Center / Play Jeux
-let cloudUid = null, cloudTimer;
+let cloudUid = null, cloudName = '', cloudTimer;
 const FA = () => plugin('FirebaseAuthentication'), FS = () => plugin('FirebaseFirestore');
 async function cloudInit(){
   const A = FA(), F = FS(); if (!A || !F) return cloudUi();
@@ -48,7 +48,7 @@ async function cloudInit(){
     let u = (await A.getCurrentUser()).user;
     if (!u) try { u = (await (platform() === 'ios' ? A.signInWithGameCenter() : A.signInWithPlayGames())).user } catch {}
     if (!u) u = (await A.signInAnonymously()).user;
-    cloudUid = u?.uid;
+    cloudUid = u?.uid; cloudName = u?.displayName || '🎮 ' + String(cloudUid || '').slice(0, 5);
     if (cloudUid) {
       const d = (await F.getDocument({reference: 'saves/' + cloudUid})).snapshot?.data;
       if (d?.save && (fresh || d.updatedAt > (S.syncedAt || 0))) { mergeSave(JSON.parse(d.save)); lang = S.lang || lang; applyLang(); ui() }
@@ -189,10 +189,19 @@ async function buy(id){
   await sleep(400); grant(id); // simulation web uniquement
 }
 
-// ---------- Classement mondial (Game Center / Play Games)
-const GC = () => plugin('CapacitorGameConnect');
-const LB_ID = () => platform() === 'ios' ? 'stacksnap.highscore' : 'REMPLACER_PAR_ID_PLAY_GAMES';
-async function gcSubmit(sc){ try { const g = GC(); if (g) { await g.signIn(); await g.submitScore({leaderboardID: LB_ID(), totalScoreAmount: sc}) } } catch {} }
+// ---------- Classement mondial (Firestore : scores/{uid}, iOS + Android)
+async function lbSubmit(sc){
+  const F = FS(); if (!F || !cloudUid || sc <= (S.lbBest || 0)) return;
+  try { await F.setDocument({reference: 'scores/' + cloudUid, data: {name: cloudName.slice(0, 20), score: sc, updatedAt: Date.now()}}); S.lbBest = sc; save() } catch {}
+}
+async function lbShow(){
+  const F = FS(); if (!F) return;
+  try {
+    const r = await F.getCollection({reference: 'scores', queryConstraints: [{type: 'orderBy', fieldPath: 'score', directionStr: 'desc'}, {type: 'limit', limit: 20}]});
+    const esc = x => String(x).replace(/[<>&"]/g, c => '&#' + c.charCodeAt(0) + ';');
+    $('world').innerHTML = r.snapshots.map(d => `<li ${d.id === cloudUid ? 'style="color:var(--acc)"' : ''}>${esc(d.data.name)} <small>${d.data.score}</small></li>`).join('') || '<li>—</li>';
+  } catch {}
+}
 
 // ---------- Notifications locales
 async function scheduleNotifs(){
@@ -408,7 +417,7 @@ function end(win){
   const k = bestKey(); if (G.mode !== 'puzzle') S.best[k] = Math.max(S.best[k] || 0, G.score);
   let stars = 0;
   if (G.mode === 'puzzle' && win) { const f = G.moves / G.total; stars = f >= .3 ? 3 : f >= .1 ? 2 : 1; S.levels[G.level] = Math.max(S.levels[G.level] || 0, stars); S.xp += 30; track('level_complete', {level: G.level + 1, stars}) }
-  if (G.mode === 'classic') { S.top = [...S.top, {s: G.score, d: today()}].sort((a, b) => b.s - a.s).slice(0, 10); gcSubmit(G.score) }
+  if (G.mode === 'classic') { S.top = [...S.top, {s: G.score, d: today()}].sort((a, b) => b.s - a.s).slice(0, 10); lbSubmit(G.score) }
   const earned = Math.floor(G.score / 20) + stars * 20;
   S.coins += earned; S.xp += 10 + Math.floor(G.score / 50);
   if (S.stats.games >= 3 && !S.offerAt && !S.granted.length) S.offerAt = Date.now();
@@ -553,7 +562,7 @@ function renderMenu(){
   $('skins').innerHTML = SKINS.map(k => { const own = S.owned.includes(k.id);
     return `<button class="sk ${k.id === S.skin ? 'on' : ''}" data-k="${k.id}" ${!own && k.pass ? 'disabled' : ''}><i style="background:${k.col(3)};border-radius:${k.r / 2}px"></i>${skinName(k.id)}<small>${own ? t(k.id === S.skin ? 'equipped' : 'choose') : k.pass ? t('passonly') : k.price + ' 🪙'}</small></button>` }).join('');
   $('top').innerHTML = S.top.map(x => `<li>${x.s} <small>${x.d}</small></li>`).join('') || '<li>—</li>';
-  show('gc', !!GC());
+  show('gc', !!(FS() && cloudUid)); $('world').innerHTML = '';
   $('stats').innerHTML = [[t('st_games'), S.stats.games], [t('st_tile'), label(S.stats.tile)], [t('st_merges'), S.stats.merges]]
     .map(([a, b]) => `<div class="mi"><span>${a}</span><b>${b}</b></div>`).join('');
 }
@@ -617,7 +626,7 @@ $('offerBtn').onclick = () => { close('over'); renderShop(); open('shop') };
 $('menuBtn').onclick = () => { renderMenu(); open('menu') };
 $('shopBtn').onclick = () => { renderShop(); open('shop'); track('shop_open') };
 $('passBtn').onclick = () => { renderPass(); open('pass') };
-$('gc').onclick = async () => { try { const g = GC(); await g.signIn(); await g.showLeaderboard({leaderboardID: LB_ID()}) } catch {} };
+$('gc').onclick = lbShow;
 $('skins').onclick = e => { const b = e.target.closest('[data-k]'); if (!b) return; const k = SKINS.find(s => s.id === b.dataset.k);
   if (!S.owned.includes(k.id)) { if (k.pass) return; if (S.coins < k.price) { b.querySelector('small').textContent = t('notenough'); return } S.coins -= k.price; S.owned.push(k.id); sfx.coin() }
   S.skin = k.id; ui(); renderMenu() };

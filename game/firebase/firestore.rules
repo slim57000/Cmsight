@@ -1,13 +1,22 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Chaque joueur ne peut lire et écrire que sa propre sauvegarde (≤ 200 Ko)
+    // Sauvegarde : chaque joueur ne lit et n'écrit que la sienne (≤ 200 Ko)
     match /saves/{uid} {
       allow read: if request.auth != null && request.auth.uid == uid;
       allow write: if request.auth != null && request.auth.uid == uid
                    && request.resource.data.keys().hasOnly(['save', 'updatedAt'])
                    && request.resource.data.save is string && request.resource.data.save.size() < 200000
                    && request.resource.data.updatedAt is int;
+    }
+    // Classement mondial : lecture pour tous les joueurs connectés, écriture de son propre score uniquement
+    match /scores/{uid} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == uid
+                   && request.resource.data.keys().hasOnly(['name', 'score', 'updatedAt'])
+                   && request.resource.data.name is string && request.resource.data.name.size() <= 20
+                   && request.resource.data.score is int && request.resource.data.score >= 0 && request.resource.data.score < 100000000
+                   && (resource == null || request.resource.data.score > resource.data.score);
     }
     match /{document=**} { allow read, write: if false; }
   }
