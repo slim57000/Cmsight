@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Paiement réussi | Cmsight</title>
+<title>Paiement confirmé | Cmsight</title>
 <meta name="description" content="Votre licence EU Compliance Suite a été activée, la clé vous a été envoyée par email.">
 <meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -26,13 +26,15 @@
   <section class="hero">
     <div class="container hero-inner">
       <span class="eyebrow">✅ Paiement confirmé</span>
-      <h1 id="success-title">Merci pour votre achat</h1>
-      <p class="lead" id="success-lead">Votre paiement a été validé.</p>
+      <h1 id="success-title">Paiement confirmé</h1>
+      <p class="lead" id="success-lead">Merci pour votre achat.</p>
+      <p class="lead">Votre licence EU Compliance All in 1 sera générée après confirmation du paiement et envoyée par e-mail.</p>
       <div class="hero-actions">
-        <a href="/index.html" id="success-back-link" class="btn btn-primary">Voir Cmsight</a>
+        <a href="/support" id="success-back-link" class="btn btn-primary">Support</a>
+        <a href="/support" class="btn btn-ghost">Support EU Compliance</a>
         <a href="/index.html" class="btn btn-ghost">Accueil</a>
       </div>
-      <p class="hero-note">Vous ne recevez rien après quelques minutes ? Vérifiez vos spams ou écrivez-nous à contact@rampedigitale.fr</p>
+      <p class="hero-note">Pour toute question : contact@rampedigitale.fr</p>
 
       <script>
         (function () {
@@ -41,15 +43,15 @@
           var lead = document.getElementById('success-lead');
           var backLink = document.getElementById('success-back-link');
           if (product === 'cmsight') {
-            title.innerHTML = 'Merci pour votre achat <span class="grad">Cmsight</span>';
+            title.innerHTML = 'Paiement confirmé <span class="grad">Cmsight</span>';
             lead.textContent = "Votre paiement a été validé. Un email vient de vous être envoyé avec votre lien d'accès à l'espace client (téléchargements et mises à jour).";
             backLink.textContent = 'Accéder à mon espace';
             backLink.href = '/account.html';
           } else {
-            title.innerHTML = 'Merci pour votre achat <span class="grad">EU Compliance Suite</span>';
-            lead.textContent = "Votre paiement a été validé. Une clé de licence vient de vous être envoyée par email, avec les instructions d'activation.";
-            backLink.textContent = 'Retour à EU Compliance Suite';
-            backLink.href = '/eu-compliance-suite.html';
+            title.textContent = 'Paiement confirmé';
+            lead.textContent = 'Merci pour votre achat.';
+            backLink.textContent = 'Support';
+            backLink.href = '/support';
           }
         })();
       </script>
@@ -58,7 +60,7 @@
 </main>
 
 <footer>
-  Créé par <a href="https://www.rampedigitale.fr">Rampe Digitale</a> · rampedigitale.fr
+  Créé par <a href="https://www.rampedigitale.fr">Rampe Digitale</a> · <a href="/terms">CGV</a> · <a href="/privacy">Confidentialité</a> · <a href="/support">Support</a>
 </footer>
 
 <script src="/script.js"></script>

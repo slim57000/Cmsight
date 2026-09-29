@@ -14,6 +14,10 @@ module.exports = async function handler(req, res) {
   }
 
   const requestedProduct = (req.body && req.body.product) || DEFAULT_PRODUCT;
+  const email = req.body && typeof req.body.email === 'string' ? req.body.email.trim() : '';
+  if (email && !/^\S+@\S+\.\S+$/.test(email)) {
+    return res.status(400).json({ error: 'Invalid email' });
+  }
   const product = getProduct(requestedProduct);
   if (!product) {
     return res.status(400).json({ error: 'Unknown product' });
@@ -38,8 +42,7 @@ module.exports = async function handler(req, res) {
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       line_items: [{ price: priceId, quantity: 1 }],
-      // No customer_email is set here, so Stripe Checkout itself collects
-      // and verifies the buyer's email address.
+      ...(email ? { customer_email: email } : {}),
       success_url: successUrl,
       cancel_url: cancelUrl,
       allow_promotion_codes: true,
