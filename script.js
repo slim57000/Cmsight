@@ -47,10 +47,18 @@ if (buyButtons.length) {
       var originalText = btn.textContent;
       btn.textContent = 'Redirection...';
       var product = btn.dataset.product || 'eu-compliance-suite';
+      var emailInput = document.getElementById('checkout-email');
+      var email = emailInput ? emailInput.value.trim() : '';
+      if (btn.dataset.requiresEmail === 'true' && (!email || !emailInput.checkValidity())) {
+        buyButtons.forEach(function (b) { b.disabled = false; });
+        btn.textContent = originalText;
+        if (emailInput) emailInput.reportValidity();
+        return;
+      }
       fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ product: product }),
+        body: JSON.stringify({ product: product, email: email || undefined }),
       })
         .then(function (r) { return r.json(); })
         .then(function (data) {
