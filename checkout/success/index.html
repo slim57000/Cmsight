@@ -6,6 +6,17 @@
 <title>Paiement réussi | Cmsight</title>
 <meta name="description" content="Votre licence EU Compliance Suite a été activée, la clé vous a été envoyée par email.">
 <meta name="robots" content="noindex">
+<!-- Google tag (gtag.js) — Google Ads conversion tracking.
+     Replace AW-XXXXXXXXXX with the real Conversion ID from
+     Google Ads > Objectifs > Conversions once the campaign is created.
+     See marketing/google-ads-campaign.md for the full setup. -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-XXXXXXXXXX"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'AW-XXXXXXXXXX');
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
@@ -36,7 +47,9 @@
 
       <script>
         (function () {
-          var product = new URLSearchParams(window.location.search).get('product');
+          var params = new URLSearchParams(window.location.search);
+          var product = params.get('product');
+          var sessionId = params.get('session_id');
           var title = document.getElementById('success-title');
           var lead = document.getElementById('success-lead');
           var backLink = document.getElementById('success-back-link');
@@ -50,6 +63,21 @@
             lead.textContent = "Votre paiement a été validé. Une clé de licence vient de vous être envoyée par email, avec les instructions d'activation.";
             backLink.textContent = 'Retour à EU Compliance Suite';
             backLink.href = '/eu-compliance-suite.html';
+          }
+
+          // Google Ads conversion tracking. Fires once per Stripe checkout
+          // session (session_id dedupes if the page is reloaded/shared).
+          // Replace AW-XXXXXXXXXX/XXXXXXXXXXXXXXXXXXXXX with the real
+          // conversion action id from Google Ads, and the EU Compliance
+          // Suite value with its real price — see
+          // marketing/google-ads-campaign.md.
+          if (sessionId && typeof gtag === 'function') {
+            gtag('event', 'conversion', {
+              send_to: 'AW-XXXXXXXXXX/XXXXXXXXXXXXXXXXXXXXX',
+              value: product === 'cmsight' ? 79.0 : 0,
+              currency: 'EUR',
+              transaction_id: sessionId,
+            });
           }
         })();
       </script>
