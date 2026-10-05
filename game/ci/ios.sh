@@ -1,13 +1,16 @@
 #!/usr/bin/env bash
 # Génère et configure le projet iOS natif (exécuté par GitHub Actions sur macOS depuis game/)
 set -euo pipefail
+FIREBASE=1
 if [ -z "${GOOGLE_SERVICE_INFO_PLIST:-}" ]; then
-  echo "::error::Secret GOOGLE_SERVICE_INFO_PLIST manquant (GoogleService-Info.plist encodé en base64). Sans lui, l'app plante au démarrage."; exit 1
+  echo "::warning::Secret GOOGLE_SERVICE_INFO_PLIST absent : build SANS Firebase (sauvegarde locale uniquement, pas de cloud/classement/statistiques)."
+  FIREBASE=0
+  npm uninstall --no-audit --no-fund @capacitor-firebase/analytics @capacitor-firebase/authentication @capacitor-firebase/firestore firebase
 fi
 rm -rf ios
 npx cap add ios --packagemanager CocoaPods
 npx capacitor-assets generate --ios --iconBackgroundColor '#1b1830' --splashBackgroundColor '#1b1830'
-echo "$GOOGLE_SERVICE_INFO_PLIST" | base64 -d > ios/App/App/GoogleService-Info.plist
+[ "$FIREBASE" = 1 ] && echo "$GOOGLE_SERVICE_INFO_PLIST" | base64 -d > ios/App/App/GoogleService-Info.plist
 
 # Info.plist : textes et clés exigés par Apple et AdMob
 PL=ios/App/App/Info.plist
@@ -28,12 +31,12 @@ PLIST
 
 # Projet Xcode : fichier Firebase, iPhone uniquement, entitlements, numéros de version
 ruby -e 'require "xcodeproj"' 2>/dev/null || sudo gem install xcodeproj --no-document
-APP_VERSION=$(node -p "require('./package.json').version") ruby <<'RB'
+FIREBASE=$FIREBASE APP_VERSION=$(node -p "require('./package.json').version") ruby <<'RB'
 require 'xcodeproj'
 p = Xcodeproj::Project.open('ios/App/App.xcodeproj')
 t = p.targets.find { |x| x.name == 'App' }
 g = p.main_group.find_subpath('App', false)
-unless g.files.any? { |f| f.path == 'GoogleService-Info.plist' }
+if ENV['FIREBASE'] == '1' && g.files.none? { |f| f.path == 'GoogleService-Info.plist' }
   t.resources_build_phase.add_file_reference(g.new_reference('GoogleService-Info.plist'))
 end
 t.build_configurations.each do |c|
