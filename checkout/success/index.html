@@ -68,16 +68,29 @@
           // Google Ads conversion tracking. Fires once per Stripe checkout
           // session (session_id dedupes if the page is reloaded/shared).
           // Replace AW-XXXXXXXXXX/XXXXXXXXXXXXXXXXXXXXX with the real
-          // conversion action id from Google Ads, and the EU Compliance
-          // Suite value with its real price — see
+          // conversion action id from Google Ads — see
           // marketing/google-ads-campaign.md.
-          if (sessionId && typeof gtag === 'function') {
+          //
+          // The value/currency come from Stripe itself via
+          // /api/checkout/session, so this never relies on a hardcoded
+          // price guess. If that lookup fails for any reason, the
+          // conversion still fires with a generic value rather than being
+          // dropped.
+          function fireConversion(details) {
+            if (!sessionId || typeof gtag !== 'function') return;
             gtag('event', 'conversion', {
               send_to: 'AW-XXXXXXXXXX/XXXXXXXXXXXXXXXXXXXXX',
-              value: product === 'cmsight' ? 79.0 : 0,
-              currency: 'EUR',
+              value: (details && details.amountTotal) || (product === 'cmsight' ? 79.0 : 0),
+              currency: (details && details.currency) || 'EUR',
               transaction_id: sessionId,
             });
+          }
+
+          if (sessionId) {
+            fetch('/api/checkout/session?session_id=' + encodeURIComponent(sessionId))
+              .then(function (r) { return r.ok ? r.json() : null; })
+              .then(fireConversion)
+              .catch(function () { fireConversion(null); });
           }
         })();
       </script>
