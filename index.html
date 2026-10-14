@@ -22,221 +22,99 @@
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="home.css">
 </head>
-<body>
-
-<div class="scroll-progress" id="scroll-progress"></div>
-
+<body class="home">
 <header>
   <nav>
-    <a href="#" class="logo">
-      
-      Cmsight<span class="dot">.</span>
-    </a>
-    <div class="nav-links">
-      <a href="#features">Fonctionnalités</a>
-      <a href="#how">Comment ça marche</a>
-      <a href="#security">Sécurité</a>
-      <a href="#pricing">Prix</a>
-      <a href="/eu-compliance">EU Compliance</a>
-      <a href="/support">Support</a>
-    </div>
+    <a href="#" class="logo">Cmsight<span class="dot">.</span></a>
+    <div class="nav-links"><a href="#exemple">Exemple</a><a href="#fonctions">Fonctions</a><a href="#securite">Sécurité</a><a href="#prix">Prix</a><a href="/eu-compliance">EU Compliance</a><a href="/support">Support</a></div>
     <div class="nav-right">
       <div class="lang-switch">
         <a href="index.html" class="active" onclick="try{localStorage.setItem('cmsight_lang','fr')}catch(e){}">FR</a>
         <a href="en.html" onclick="try{localStorage.setItem('cmsight_lang','en')}catch(e){}">EN</a>
       </div>
-      <a href="#cta" class="nav-cta">Nous contacter</a>
+      <a href="#contact" class="nav-cta">Nous contacter</a>
     </div>
   </nav>
 </header>
-
 <main>
-  <section class="hero">
-    <div class="container hero-inner">
-      <span class="eyebrow">Pour les agences web &amp; freelances</span>
-      <h1>Modifiez votre site web <span class="grad">avec l'intelligence artificielle</span>, sans toucher au code</h1>
-      <p class="lead">Un assistant IA qui connaît WordPress, WooCommerce, PrestaShop, Joomla et Drupal. Décrivez la modification en français — l'IA écrit le code exact pour votre CMS.</p>
-      <div class="hero-actions">
-        <a href="#cta" class="btn btn-primary">Demander une démonstration</a>
-        <a href="#how" class="btn btn-ghost">Voir comment ça marche</a>
-      </div>
-      <p class="hero-note">Local, FTP ou SFTP · Aucune donnée envoyée dans le cloud</p>
-      <p class="hero-note">Windows uniquement pour le moment · macOS pas encore disponible</p>
+  <section class="intro">
+    <div class="wrap">
+      <p class="kicker">Pour les agences web et les freelances</p>
+      <h1>Modifiez le site de vos clients en leur parlant, pas en codant.</h1>
+      <p class="lead">Cmsight est un logiciel Windows qui se connecte à votre site (dossier local, FTP ou SFTP), comprend votre CMS et écrit les modifications à votre place. Vous relisez, vous validez, c'est appliqué.</p>
+      <div class="actions"><a href="#contact" class="btn btn-primary">Demander une démonstration</a><a href="#exemple" class="link">Voir un exemple →</a></div>
+      <p class="small">Windows uniquement pour le moment · macOS pas encore disponible</p>
+    </div>
+    <div class="wrap wide"><img class="shot" src="images/screenshot-main.png" alt="Explorateur de fichiers et assistant dans Cmsight"></div>
+  </section>
 
-      <div class="mockup-wrap">
-        <div class="mockup">
-          <img src="images/screenshot-welcome.png" alt="Interface de Cmsight au lancement" style="display:block;width:100%;height:auto;">
-        </div>
+  <section id="exemple" class="block">
+    <div class="wrap split">
+      <div><h2>Un exemple, du début à la fin</h2><p>Vous décrivez la modification comme vous la décririez à un collègue. Cmsight repère les fichiers concernés, propose le changement sous forme de diff, et ne touche à rien tant que vous n'avez pas validé. Chaque fichier modifié est sauvegardé avant écriture.</p></div>
+      <div class="chat">
+        <p class="who">Vous</p><p class="msg">Passe le bouton « Ajouter au panier » en vert et affiche « Livraison offerte dès 60 € » juste sous le prix.</p>
+        <p class="who">Cmsight</p><p class="msg">2 fichiers à modifier sur votre WooCommerce. Aperçu avant application :</p>
+        <div class="diff"><div class="diff-file">wp-content/themes/boutique/woocommerce.css</div>
+<pre><span class="ctx">.single_add_to_cart_button {</span>
+<span class="del">-  background: #2b2b2b;</span>
+<span class="add">+  background: #2f9e44;</span>
+<span class="ctx">}</span></pre>
+<div class="diff-file">woocommerce/single-product/price.php</div>
+<pre><span class="ctx">&lt;p class="price"&gt;&lt;?php echo $product-&gt;get_price_html(); ?&gt;&lt;/p&gt;</span>
+<span class="add">+&lt;p class="free-ship"&gt;Livraison offerte dès 60 €&lt;/p&gt;</span></pre></div>
       </div>
     </div>
   </section>
 
-  <section id="screenshots">
-    <div class="container">
-      <div class="section-head reveal">
-        <h2>Un aperçu de l'application</h2>
-        <p>Quelques écrans du logiciel, tel qu'il se présente au lancement.</p>
-      </div>
-      <div class="screenshot-grid">
-        <div class="reveal">
-          <div class="mockup" style="margin-bottom:12px;">
-            <img src="images/screenshot-welcome.png" alt="Écran de bienvenue Cmsight" style="display:block;width:100%;height:auto;">
-          </div>
-          <p class="price-note" style="text-align:center;">Bienvenue</p>
-        </div>
-        <div class="reveal">
-          <div class="mockup" style="margin-bottom:12px;">
-            <img src="images/screenshot-ai-provider.png" alt="Choix du fournisseur IA dans Cmsight" style="display:block;width:100%;height:auto;">
-          </div>
-          <p class="price-note" style="text-align:center;">Choix du fournisseur IA</p>
-        </div>
-        <div class="reveal">
-          <div class="mockup" style="margin-bottom:12px;">
-            <img src="images/screenshot-main.png" alt="Explorateur de fichiers et assistant IA dans Cmsight" style="display:block;width:100%;height:auto;">
-          </div>
-          <p class="price-note" style="text-align:center;">Assistant IA sur votre site</p>
-        </div>
+  <section id="fonctions" class="block alt">
+    <div class="wrap">
+      <h2>Ce que fait le logiciel</h2>
+      <div class="rows"><div class="row"><h3>Un assistant qui connaît votre CMS</h3><p>WordPress, WooCommerce, PrestaShop, Joomla, Drupal. Il détecte le CMS à la connexion et écrit du code adapté à sa structure, pas des snippets génériques.</p></div><div class="row"><h3>Aperçu avant, sauvegarde pendant</h3><p>Vous voyez le diff avant/après de chaque fichier. À l'application, l'original est copié de côté : vous restaurez en un clic si le résultat ne vous plaît pas.</p></div><div class="row"><h3>Local, FTP ou SFTP</h3><p>Un dossier sur votre disque, un hébergement mutualisé en FTP, ou un serveur en SFTP. La connexion se configure en deux minutes.</p></div><div class="row"><h3>Pas de compte, pas de cloud</h3><p>Vos sites, vos identifiants et vos clés API restent sur votre PC. Un mot de passe protège l'accès au lancement.</p></div></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="wrap">
+      <h2>L'application</h2>
+      <div class="shots"><figure><img src="images/screenshot-welcome.png" alt="Écran de bienvenue de Cmsight"><figcaption>Écran de bienvenue</figcaption></figure><figure><img src="images/screenshot-ai-provider.png" alt="Choix du fournisseur IA dans Cmsight"><figcaption>Choix du fournisseur IA</figcaption></figure></div>
+    </div>
+  </section>
+
+  <section id="securite" class="block alt">
+    <div class="wrap narrow">
+      <h2 class="big">Vos sites restent chez vous.</h2>
+      <p class="prose">Rien n'est stocké sur un serveur Cmsight. Les fichiers de vos clients, vos clés API et vos accès FTP ne quittent jamais votre machine, et aucune modification n'est écrite sans votre validation.</p>
+    </div>
+  </section>
+
+  <section id="prix" class="block">
+    <div class="wrap split">
+      <div><h2>Une licence, pas d'abonnement</h2><p class="price">129€</p><p class="small">licence à vie, paiement unique</p></div>
+      <div>
+        <ul class="plain"><li>Accès complet à l'assistant</li><li>WordPress, WooCommerce, PrestaShop, Joomla, Drupal</li><li>Mises à jour incluses</li><li>Autant de sites clients que vous voulez</li></ul>
+        <p class="small">Windows uniquement pour le moment.</p>
+        <button type="button" class="btn btn-primary buy-license-btn" data-product="cmsight">Acheter la licence</button>
       </div>
     </div>
   </section>
 
-  <section class="features" id="features">
-    <div class="container">
-      <div class="section-head reveal">
-        <h2>Ce que Cmsight fait pour vous</h2>
-        <p>Un assistant qui connaît vos outils, pas un chatbot générique.</p>
-      </div>
-      <div class="feature-grid">
-        <div class="feature-card reveal">
-          <div class="fico"></div>
-          <h3>Assistant IA</h3>
-          <p>Décrivez la modification en français — l'IA écrit le code exact pour votre CMS.</p>
-        </div>
-        <div class="feature-card reveal">
-          <div class="fico"></div>
-          <h3>Aperçu &amp; Backup</h3>
-          <p>Comparez avant/après avant d'appliquer. Sauvegarde de chaque fichier modifié, restauration à tout moment.</p>
-        </div>
-        <div class="feature-card reveal">
-          <div class="fico"></div>
-          <h3>Local, FTP, SFTP</h3>
-          <p>Connexion en 2 minutes vers un dossier local, un hébergement FTP ou un serveur SFTP sécurisé.</p>
-        </div>
-        <div class="feature-card reveal">
-          <div class="fico"></div>
-          <h3>Sécurité</h3>
-          <p>Mot de passe au lancement, tout reste sur votre machine. Pas de cloud, pas d'abonnement caché.</p>
-        </div>
-      </div>
-      <div class="cms-row reveal">
-        <span class="cms-pill">WordPress</span>
-        <span class="cms-pill">WooCommerce</span>
-        <span class="cms-pill">PrestaShop</span>
-        <span class="cms-pill">Joomla</span>
-        <span class="cms-pill">Drupal</span>
-      </div>
-    </div>
-  </section>
-
-  <section id="how">
-    <div class="container">
-      <div class="section-head reveal">
-        <h2>Simple comme 1, 2, 3, 4</h2>
-        <p>Aucune connaissance technique requise.</p>
-      </div>
-      <div class="steps">
-        <div class="step reveal">
-          <div class="num">1</div>
-          <h3>Configurez</h3>
-          <p>Connectez votre site : dossier local, FTP ou SFTP. Le CMS est détecté automatiquement.</p>
-        </div>
-        <div class="step reveal">
-          <div class="num">2</div>
-          <h3>Demandez</h3>
-          <p>Décrivez ce que vous voulez changer dans le chat.</p>
-        </div>
-        <div class="step reveal">
-          <div class="num">3</div>
-          <h3>Vérifiez</h3>
-          <p>L'IA propose les fichiers modifiés. Vous voyez le diff avant/après.</p>
-        </div>
-        <div class="step reveal">
-          <div class="num">4</div>
-          <h3>Appliquez</h3>
-          <p>Un clic : les fichiers sont modifiés et sauvegardés automatiquement.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="security" id="security">
-    <div class="container security-inner">
-      <div class="reveal">
-        <h2>Vos sites, protégés</h2>
-        <ul class="sec-list">
-          <li><span class="check">✓</span> Sauvegarde automatique de chaque fichier avant modification</li>
-          <li><span class="check">✓</span> Données et clés API stockées uniquement sur votre PC</li>
-          <li><span class="check">✓</span> Accès protégé par mot de passe au lancement</li>
-          <li><span class="check">✓</span> Aperçu des modifications avant application, zéro mauvaise surprise</li>
-        </ul>
-      </div>
-      <div class="security-panel reveal">
-        <p><strong>Zéro cloud.</strong><br>Tout reste sur votre machine — vos sites clients, vos clés API, vos identifiants de connexion ne quittent jamais votre PC.</p>
-      </div>
-    </div>
-  </section>
-
-  <section id="pricing">
-    <div class="container">
-      <div class="section-head reveal">
-        <h2>Un prix unique, pas d'abonnement</h2>
-        <p>Vous achetez une fois, vous gardez l'outil. Sans engagement caché.</p>
-      </div>
-      <div class="pricing-card reveal">
-        <div class="price-amount">129€<span> / licence à vie</span></div>
-        <p class="price-note">Paiement unique — aucun renouvellement, aucun abonnement</p>
-        <ul class="price-features">
-          <li><span class="check">✓</span> Accès complet à l'assistant IA</li>
-          <li><span class="check">✓</span> WordPress, WooCommerce, PrestaShop, Joomla, Drupal</li>
-          <li><span class="check">✓</span> Mises à jour incluses</li>
-          <li><span class="check">✓</span> Utilisation sur vos sites clients, sans limite de projets</li>
-        </ul>
-        <p class="price-note" style="margin-bottom:20px;">Windows uniquement pour le moment — macOS pas encore disponible</p>
-        <button type="button" class="btn btn-primary buy-license-btn" data-product="cmsight" style="width:100%;justify-content:center;">Acheter</button>
-      </div>
-    </div>
-  </section>
-
-  <section class="cta" id="cta">
-    <div class="container">
-      <div class="cta-box reveal">
-        <h2>Cmsight — votre site, piloté par l'IA</h2>
-        <p>En vente aux agences de développement web. Contactez-nous pour une démonstration et nos conditions.</p>
-        <form class="contact-form" id="contact-form" data-mail="contact@rampedigitale.fr">
-          <div class="form-row">
-            <input type="text" name="name" placeholder="Votre nom" required>
-            <input type="email" name="email" placeholder="Votre email" required>
-          </div>
-          <textarea name="message" rows="4" placeholder="Votre message" required></textarea>
-          <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">Envoyer le message</button>
-        </form>
-        <p class="hero-note" style="margin-top:16px;">ou écrivez directement à <a href="mailto:contact@rampedigitale.fr" style="color:var(--accent-2);">contact@rampedigitale.fr</a></p>
-      </div>
+  <section id="contact" class="block alt">
+    <div class="wrap split">
+      <div><h2>Parlons de votre agence</h2><p>Cmsight est vendu aux agences de développement web. Écrivez-nous pour une démonstration ou pour nos conditions.</p><p class="small">ou écrivez à <a href="mailto:contact@rampedigitale.fr">contact@rampedigitale.fr</a></p></div>
+      <form class="contact-form" id="contact-form" data-mail="contact@rampedigitale.fr">
+        <div class="form-row"><input type="text" name="name" placeholder="Votre nom" required><input type="email" name="email" placeholder="Votre email" required></div>
+        <textarea name="message" rows="4" placeholder="Votre message" required></textarea>
+        <button type="submit" class="btn btn-primary">Envoyer</button>
+      </form>
     </div>
   </section>
 </main>
-
-<footer>
-  Créé par <a href="https://www.rampedigitale.fr">Rampe Digitale</a> · <a href="/terms">CGV</a> · <a href="/privacy">Confidentialité</a> · <a href="/support">Support</a> · <a href="/account.html">Mon espace</a>
-</footer>
-
-<button id="back-to-top" class="back-to-top" aria-label="Retour en haut">↑</button>
-
+<footer>Créé par <a href="https://www.rampedigitale.fr">Rampe Digitale</a> · <a href="/terms">CGV</a> · <a href="/privacy">Confidentialité</a> · <a href="/support">Support</a> · <a href="/account.html">Mon espace</a></footer>
 <script src="script.js"></script>
 <script defer src="/_vercel/insights/script.js"></script>
-
 </body>
 </html>

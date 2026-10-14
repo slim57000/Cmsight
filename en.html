@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cmsight — Edit your website with AI</title>
-<meta name="description" content="Cmsight: an AI assistant that edits your WordPress, WooCommerce, PrestaShop, Joomla or Drupal site, no coding required. Local, secure, no hidden subscription.">
+<meta name="description" content="Cmsight: an AI assistant that edits your WordPress, WooCommerce, PrestaShop, Joomla or Drupal site without touching the code. Local, secure, no hidden subscription.">
 <link rel="alternate" hreflang="fr" href="index.html">
 <link rel="alternate" hreflang="en" href="en.html">
 <link rel="alternate" hreflang="x-default" href="index.html">
@@ -12,227 +12,109 @@
   (function () {
     try {
       var pref = localStorage.getItem('cmsight_lang');
-      if (pref === 'fr') { window.location.replace('index.html'); return; }
+      if (pref === 'en') { window.location.replace('en.html'); return; }
+      if (!pref) {
+        var lang = (navigator.language || navigator.userLanguage || '').toLowerCase();
+        if (lang.indexOf('fr') !== 0) { window.location.replace('en.html'); }
+      }
     } catch (e) {}
   })();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="home.css">
 </head>
-<body>
-
-<div class="scroll-progress" id="scroll-progress"></div>
-
+<body class="home">
 <header>
   <nav>
-    <a href="#" class="logo">
-      
-      Cmsight<span class="dot">.</span>
-    </a>
-    <div class="nav-links">
-      <a href="#features">Features</a>
-      <a href="#how">How it works</a>
-      <a href="#security">Security</a>
-      <a href="#pricing">Pricing</a>
-      <a href="/eu-compliance">EU Compliance</a>
-      <a href="/support">Support</a>
-    </div>
+    <a href="#" class="logo">Cmsight<span class="dot">.</span></a>
+    <div class="nav-links"><a href="#example">Example</a><a href="#features">Features</a><a href="#security">Security</a><a href="#pricing">Pricing</a><a href="/eu-compliance">EU Compliance</a><a href="/support">Support</a></div>
     <div class="nav-right">
       <div class="lang-switch">
         <a href="index.html" onclick="try{localStorage.setItem('cmsight_lang','fr')}catch(e){}">FR</a>
         <a href="en.html" class="active" onclick="try{localStorage.setItem('cmsight_lang','en')}catch(e){}">EN</a>
       </div>
-      <a href="#cta" class="nav-cta">Contact us</a>
+      <a href="#contact" class="nav-cta">Contact us</a>
     </div>
   </nav>
 </header>
-
 <main>
-  <section class="hero">
-    <div class="container hero-inner">
-      <span class="eyebrow">For web agencies &amp; freelancers</span>
-      <h1>Edit your website <span class="grad">with artificial intelligence</span>, without touching the code</h1>
-      <p class="lead">An AI assistant that knows WordPress, WooCommerce, PrestaShop, Joomla and Drupal. Describe the change in plain English — the AI writes the exact code for your CMS.</p>
-      <div class="hero-actions">
-        <a href="#cta" class="btn btn-primary">Request a demo</a>
-        <a href="#how" class="btn btn-ghost">See how it works</a>
-      </div>
-      <p class="hero-note">Local, FTP or SFTP · No data sent to the cloud</p>
-      <p class="hero-note">Windows only for now · macOS not available yet</p>
+  <section class="intro">
+    <div class="wrap">
+      <p class="kicker">For web agencies and freelancers</p>
+      <h1>Edit your clients' websites by describing the change, not by coding it.</h1>
+      <p class="lead">Cmsight is a Windows app that connects to your site (local folder, FTP or SFTP), understands your CMS and writes the changes for you. You review, you approve, it's applied.</p>
+      <div class="actions"><a href="#contact" class="btn btn-primary">Request a demo</a><a href="#example" class="link">See an example →</a></div>
+      <p class="small">Windows only for now · macOS not available yet</p>
+    </div>
+    <div class="wrap wide"><img class="shot" src="images/screenshot-main.png" alt="File explorer and assistant in Cmsight"></div>
+  </section>
 
-      <div class="mockup-wrap">
-        <div class="mockup">
-          <img src="images/screenshot-welcome.png" alt="Cmsight app interface on launch" style="display:block;width:100%;height:auto;">
-        </div>
+  <section id="example" class="block">
+    <div class="wrap split">
+      <div><h2>An example, start to finish</h2><p>You describe the change the way you would to a colleague. Cmsight finds the relevant files, proposes the change as a diff, and touches nothing until you approve. Every modified file is backed up before it is written.</p></div>
+      <div class="chat">
+        <p class="who">You</p><p class="msg">Make the "Add to cart" button green and show "Free shipping over €60" right under the price.</p>
+        <p class="who">Cmsight</p><p class="msg">2 files to change on your WooCommerce store. Preview before applying:</p>
+        <div class="diff"><div class="diff-file">wp-content/themes/boutique/woocommerce.css</div>
+<pre><span class="ctx">.single_add_to_cart_button {</span>
+<span class="del">-  background: #2b2b2b;</span>
+<span class="add">+  background: #2f9e44;</span>
+<span class="ctx">}</span></pre>
+<div class="diff-file">woocommerce/single-product/price.php</div>
+<pre><span class="ctx">&lt;p class="price"&gt;&lt;?php echo $product-&gt;get_price_html(); ?&gt;&lt;/p&gt;</span>
+<span class="add">+&lt;p class="free-ship"&gt;Free shipping over €60&lt;/p&gt;</span></pre></div>
       </div>
     </div>
   </section>
 
-  <section id="screenshots">
-    <div class="container">
-      <div class="section-head reveal">
-        <h2>A look at the app</h2>
-        <p>A few screens from the app, as it looks on launch.</p>
-      </div>
-      <div class="screenshot-grid">
-        <div class="reveal">
-          <div class="mockup" style="margin-bottom:12px;">
-            <img src="images/screenshot-welcome.png" alt="Cmsight welcome screen" style="display:block;width:100%;height:auto;">
-          </div>
-          <p class="price-note" style="text-align:center;">Welcome</p>
-        </div>
-        <div class="reveal">
-          <div class="mockup" style="margin-bottom:12px;">
-            <img src="images/screenshot-ai-provider.png" alt="AI provider selection in Cmsight" style="display:block;width:100%;height:auto;">
-          </div>
-          <p class="price-note" style="text-align:center;">AI provider selection</p>
-        </div>
-        <div class="reveal">
-          <div class="mockup" style="margin-bottom:12px;">
-            <img src="images/screenshot-main.png" alt="File explorer and AI assistant in Cmsight" style="display:block;width:100%;height:auto;">
-          </div>
-          <p class="price-note" style="text-align:center;">AI assistant on your site</p>
-        </div>
+  <section id="features" class="block alt">
+    <div class="wrap">
+      <h2>What the software does</h2>
+      <div class="rows"><div class="row"><h3>An assistant that knows your CMS</h3><p>WordPress, WooCommerce, PrestaShop, Joomla, Drupal. It detects the CMS on connection and writes code that fits its structure, not generic snippets.</p></div><div class="row"><h3>Preview before, backup during</h3><p>You see the before/after diff of every file. When you apply, the original is copied aside: restore it in one click if you don't like the result.</p></div><div class="row"><h3>Local, FTP or SFTP</h3><p>A folder on your disk, shared hosting over FTP, or a server over SFTP. Setting up a connection takes two minutes.</p></div><div class="row"><h3>No account, no cloud</h3><p>Your sites, credentials and API keys stay on your PC. A password protects access at launch.</p></div></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="wrap">
+      <h2>The app</h2>
+      <div class="shots"><figure><img src="images/screenshot-welcome.png" alt="Cmsight welcome screen"><figcaption>Welcome screen</figcaption></figure><figure><img src="images/screenshot-ai-provider.png" alt="AI provider choice in Cmsight"><figcaption>AI provider choice</figcaption></figure></div>
+    </div>
+  </section>
+
+  <section id="security" class="block alt">
+    <div class="wrap narrow">
+      <h2 class="big">Your sites stay with you.</h2>
+      <p class="prose">Nothing is stored on a Cmsight server. Your clients' files, API keys and FTP credentials never leave your machine, and no change is written without your approval.</p>
+    </div>
+  </section>
+
+  <section id="pricing" class="block">
+    <div class="wrap split">
+      <div><h2>One license, no subscription</h2><p class="price">€129</p><p class="small">lifetime license, one-time payment</p></div>
+      <div>
+        <ul class="plain"><li>Full access to the assistant</li><li>WordPress, WooCommerce, PrestaShop, Joomla, Drupal</li><li>Updates included</li><li>As many client sites as you like</li></ul>
+        <p class="small">Windows only for now.</p>
+        <button type="button" class="btn btn-primary buy-license-btn" data-product="cmsight">Buy the license</button>
       </div>
     </div>
   </section>
 
-  <section class="features" id="features">
-    <div class="container">
-      <div class="section-head reveal">
-        <h2>What Cmsight does for you</h2>
-        <p>An assistant that knows your tools, not a generic chatbot.</p>
-      </div>
-      <div class="feature-grid">
-        <div class="feature-card reveal">
-          <div class="fico"></div>
-          <h3>AI Assistant</h3>
-          <p>Describe the change in plain English — the AI writes the exact code for your CMS.</p>
-        </div>
-        <div class="feature-card reveal">
-          <div class="fico"></div>
-          <h3>Preview &amp; Backup</h3>
-          <p>Compare before/after before applying. Every modified file is backed up, restore anytime.</p>
-        </div>
-        <div class="feature-card reveal">
-          <div class="fico"></div>
-          <h3>Local, FTP, SFTP</h3>
-          <p>Connect in 2 minutes to a local folder, FTP hosting, or a secure SFTP server.</p>
-        </div>
-        <div class="feature-card reveal">
-          <div class="fico"></div>
-          <h3>Security</h3>
-          <p>Password on launch, everything stays on your machine. No cloud, no hidden subscription.</p>
-        </div>
-      </div>
-      <div class="cms-row reveal">
-        <span class="cms-pill">WordPress</span>
-        <span class="cms-pill">WooCommerce</span>
-        <span class="cms-pill">PrestaShop</span>
-        <span class="cms-pill">Joomla</span>
-        <span class="cms-pill">Drupal</span>
-      </div>
-    </div>
-  </section>
-
-  <section id="how">
-    <div class="container">
-      <div class="section-head reveal">
-        <h2>As simple as 1, 2, 3, 4</h2>
-        <p>No technical knowledge required.</p>
-      </div>
-      <div class="steps">
-        <div class="step reveal">
-          <div class="num">1</div>
-          <h3>Set up</h3>
-          <p>Connect your site: local folder, FTP or SFTP. The CMS is detected automatically.</p>
-        </div>
-        <div class="step reveal">
-          <div class="num">2</div>
-          <h3>Ask</h3>
-          <p>Describe what you want to change in the chat.</p>
-        </div>
-        <div class="step reveal">
-          <div class="num">3</div>
-          <h3>Review</h3>
-          <p>The AI proposes the modified files. You see the before/after diff.</p>
-        </div>
-        <div class="step reveal">
-          <div class="num">4</div>
-          <h3>Apply</h3>
-          <p>One click: the files are modified and automatically backed up.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="security" id="security">
-    <div class="container security-inner">
-      <div class="reveal">
-        <h2>Your sites, protected</h2>
-        <ul class="sec-list">
-          <li><span class="check">✓</span> Automatic backup of every file before modification</li>
-          <li><span class="check">✓</span> Data and API keys stored only on your PC</li>
-          <li><span class="check">✓</span> Password-protected access on launch</li>
-          <li><span class="check">✓</span> Preview of changes before applying, zero surprises</li>
-        </ul>
-      </div>
-      <div class="security-panel reveal">
-        <p><strong>Zero cloud.</strong><br>Everything stays on your machine — your clients' sites, your API keys, your login credentials never leave your PC.</p>
-      </div>
-    </div>
-  </section>
-
-  <section id="pricing">
-    <div class="container">
-      <div class="section-head reveal">
-        <h2>One flat price, no subscription</h2>
-        <p>Buy it once, keep the tool. No hidden commitment.</p>
-      </div>
-      <div class="pricing-card reveal">
-        <div class="price-amount">€129<span> / lifetime license</span></div>
-        <p class="price-note">One-time payment — no renewal, no subscription</p>
-        <ul class="price-features">
-          <li><span class="check">✓</span> Full access to the AI assistant</li>
-          <li><span class="check">✓</span> WordPress, WooCommerce, PrestaShop, Joomla, Drupal</li>
-          <li><span class="check">✓</span> Updates included</li>
-          <li><span class="check">✓</span> Use on your client sites, unlimited projects</li>
-        </ul>
-        <p class="price-note" style="margin-bottom:20px;">Windows only for now — macOS not available yet</p>
-        <button type="button" class="btn btn-primary buy-license-btn" data-product="cmsight" style="width:100%;justify-content:center;">Buy now</button>
-      </div>
-    </div>
-  </section>
-
-  <section class="cta" id="cta">
-    <div class="container">
-      <div class="cta-box reveal">
-        <h2>Cmsight — your website, powered by AI</h2>
-        <p>Sold to web development agencies. Contact us for a demo and our terms.</p>
-        <form class="contact-form" id="contact-form" data-mail="contact@rampedigitale.fr">
-          <div class="form-row">
-            <input type="text" name="name" placeholder="Your name" required>
-            <input type="email" name="email" placeholder="Your email" required>
-          </div>
-          <textarea name="message" rows="4" placeholder="Your message" required></textarea>
-          <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">Send message</button>
-        </form>
-        <p class="hero-note" style="margin-top:16px;">or email us directly at <a href="mailto:contact@rampedigitale.fr" style="color:var(--accent-2);">contact@rampedigitale.fr</a></p>
-      </div>
+  <section id="contact" class="block alt">
+    <div class="wrap split">
+      <div><h2>Let's talk about your agency</h2><p>Cmsight is sold to web development agencies. Write to us for a demo or for our terms.</p><p class="small">or email <a href="mailto:contact@rampedigitale.fr">contact@rampedigitale.fr</a></p></div>
+      <form class="contact-form" id="contact-form" data-mail="contact@rampedigitale.fr">
+        <div class="form-row"><input type="text" name="name" placeholder="Your name" required><input type="email" name="email" placeholder="Your email" required></div>
+        <textarea name="message" rows="4" placeholder="Your message" required></textarea>
+        <button type="submit" class="btn btn-primary">Send</button>
+      </form>
     </div>
   </section>
 </main>
-
-<footer>
-  Made by <a href="https://www.rampedigitale.fr">Rampe Digitale</a> · <a href="/terms">Terms</a> · <a href="/privacy">Privacy</a> · <a href="/support">Support</a> · <a href="/account.html">My account</a>
-</footer>
-
-<button id="back-to-top" class="back-to-top" aria-label="Back to top">↑</button>
-
+<footer>Made by <a href="https://www.rampedigitale.fr">Rampe Digitale</a> · <a href="/terms">Terms</a> · <a href="/privacy">Privacy</a> · <a href="/support">Support</a> · <a href="/account.html">My account</a></footer>
 <script src="script.js"></script>
 <script defer src="/_vercel/insights/script.js"></script>
-
 </body>
 </html>
