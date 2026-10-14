@@ -8,18 +8,18 @@
 <meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/style.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/home.css">
 <style>
   .hero-inner > .portal-card{animation-delay:.35s;}
   .portal-card{max-width:480px;margin:40px auto 0;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:32px;text-align:left;opacity:1;transition:opacity .3s ease;}
-  .portal-card h2{font-family:'Space Grotesk',sans-serif;font-size:1.3rem;color:#fff;margin-bottom:10px;}
+  .portal-card h2{font-family:'Instrument Serif',Georgia,serif;font-size:1.3rem;color:#fff;margin-bottom:10px;}
   .portal-card p{color:var(--text-muted);font-size:0.92rem;line-height:1.55;margin-bottom:20px;}
   .portal-card input,.portal-card textarea{width:100%;background:var(--panel-2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-family:inherit;font-size:0.92rem;margin-bottom:14px;transition:border-color .2s;}
   .portal-card textarea{resize:vertical;min-height:80px;}
   .portal-card input:focus,.portal-card textarea:focus{outline:none;border-color:var(--accent);}
   .comment-item{background:var(--panel-2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;animation:fadeInUp .35s ease both;}
-  .comment-item.is-admin{background:rgba(123,111,240,0.12);border-color:var(--accent);}
+  .comment-item.is-admin{background:rgba(99,102,241,0.12);border-color:var(--accent);}
   .comment-item .comment-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px;}
   .comment-item .comment-name{font-weight:600;color:#fff;font-size:0.9rem;display:flex;align-items:center;gap:6px;}
   .comment-item .admin-badge{background:var(--accent);color:#fff;font-size:0.68rem;font-weight:700;letter-spacing:0.03em;text-transform:uppercase;padding:2px 8px;border-radius:999px;}
@@ -38,14 +38,14 @@
   }
 </style>
 </head>
-<body>
+<body class="home">
 
 <div class="scroll-progress" id="scroll-progress"></div>
 
 <header>
   <nav>
     <a href="/index.html" class="logo">
-      <span class="logo-badge">🔥</span>
+      
       Cmsight<span class="dot">.</span>
     </a>
     <div class="nav-right">
@@ -57,7 +57,7 @@
 <main>
   <section class="hero" style="padding-bottom:60px;">
     <div class="container hero-inner">
-      <span class="eyebrow">🔑 Espace client</span>
+      <span class="eyebrow">Espace client</span>
       <h1>Vos <span class="grad">téléchargements</span> Cmsight</h1>
       <p class="lead" id="portal-intro">Retrouvez ici le lien de téléchargement et les mises à jour de votre licence Cmsight.</p>
 
