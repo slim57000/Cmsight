@@ -105,9 +105,15 @@
   <section id="contact" class="block alt">
     <div class="wrap split">
       <div><h2>Parlons de votre agence</h2><p>Cmsight est vendu aux agences de développement web. Écrivez-nous pour une démonstration ou pour nos conditions.</p><p class="small">ou écrivez à <a href="mailto:contact@rampedigitale.fr">contact@rampedigitale.fr</a></p></div>
-      <form class="contact-form" id="contact-form" data-mail="contact@rampedigitale.fr">
-        <div class="form-row"><input type="text" name="name" placeholder="Votre nom" required><input type="email" name="email" placeholder="Votre email" required></div>
-        <textarea name="message" rows="4" placeholder="Votre message" required></textarea>
+      <form class="contact-form" id="contact-form" data-mail="contact@rampedigitale.fr" novalidate>
+        <div class="form-row"><input type="text" name="name" placeholder="Votre nom" autocomplete="name" required minlength="2" maxlength="80"><input type="email" name="email" placeholder="Votre email" autocomplete="email" required maxlength="120"></div>
+        <div class="form-row"><input type="text" name="company" placeholder="Agence / société" autocomplete="organization" required minlength="2" maxlength="100"><input type="url" name="website" placeholder="Site web (https://…)" autocomplete="url" required maxlength="200"></div>
+        <select name="subject" required aria-label="Objet"><option>Demande de démonstration</option><option>Conditions pour agence</option><option>Question technique</option><option>Autre</option></select>
+        <textarea name="message" rows="4" placeholder="Votre message (20 caractères minimum)" required minlength="20" maxlength="2000"></textarea>
+        <label class="consent"><input type="checkbox" name="consent" required> <span>J'accepte que mes informations soient utilisées pour répondre à ma demande.</span></label>
+        <div class="hp" aria-hidden="true"><label>Ne pas remplir <input type="text" name="company_url" tabindex="-1" autocomplete="off"></label></div>
+        <input type="hidden" name="ts" value="">
+        <p class="form-status" id="contact-status" role="status" aria-live="polite"></p>
         <button type="submit" class="btn btn-primary">Envoyer</button>
       </form>
     </div>

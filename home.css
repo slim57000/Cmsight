@@ -113,3 +113,11 @@ figcaption{margin-top:10px;font-size:.88rem;color:var(--text-muted);}
 .home button.btn{border:0;cursor:pointer;font-family:inherit;}
 .home button.btn-ghost{border:1px solid var(--border);}
 .home .reveal{opacity:1;transform:none;transition:none;}
+.home .contact-form select{background:var(--panel-2);border:1px solid var(--border);border-radius:6px;padding:12px 14px;color:var(--text);font-family:inherit;font-size:.92rem;}
+.home .contact-form select:focus{outline:none;border-color:var(--accent);}
+.home .contact-form input,.home .contact-form textarea{border-radius:6px;}
+.home .consent{display:flex;gap:10px;align-items:flex-start;font-size:.85rem;color:var(--text-muted);}
+.home .consent input{margin-top:3px;accent-color:var(--accent);flex-shrink:0;}
+.hp{position:absolute!important;left:-9999px;width:1px;height:1px;overflow:hidden;}
+.form-status{min-height:1.3em;font-size:.88rem;color:var(--accent-2);margin:0;}
+.form-status.error{color:#f0a0a0;}

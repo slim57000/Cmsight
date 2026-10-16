@@ -105,9 +105,15 @@
   <section id="contact" class="block alt">
     <div class="wrap split">
       <div><h2>Let's talk about your agency</h2><p>Cmsight is sold to web development agencies. Write to us for a demo or for our terms.</p><p class="small">or email <a href="mailto:contact@rampedigitale.fr">contact@rampedigitale.fr</a></p></div>
-      <form class="contact-form" id="contact-form" data-mail="contact@rampedigitale.fr">
-        <div class="form-row"><input type="text" name="name" placeholder="Your name" required><input type="email" name="email" placeholder="Your email" required></div>
-        <textarea name="message" rows="4" placeholder="Your message" required></textarea>
+      <form class="contact-form" id="contact-form" data-mail="contact@rampedigitale.fr" novalidate>
+        <div class="form-row"><input type="text" name="name" placeholder="Your name" autocomplete="name" required minlength="2" maxlength="80"><input type="email" name="email" placeholder="Your email" autocomplete="email" required maxlength="120"></div>
+        <div class="form-row"><input type="text" name="company" placeholder="Agency / company" autocomplete="organization" required minlength="2" maxlength="100"><input type="url" name="website" placeholder="Website (https://…)" autocomplete="url" required maxlength="200"></div>
+        <select name="subject" required aria-label="Subject"><option>Demo request</option><option>Agency terms</option><option>Technical question</option><option>Other</option></select>
+        <textarea name="message" rows="4" placeholder="Your message (20 characters minimum)" required minlength="20" maxlength="2000"></textarea>
+        <label class="consent"><input type="checkbox" name="consent" required> <span>I agree that my information may be used to answer my request.</span></label>
+        <div class="hp" aria-hidden="true"><label>Ne pas remplir <input type="text" name="company_url" tabindex="-1" autocomplete="off"></label></div>
+        <input type="hidden" name="ts" value="">
+        <p class="form-status" id="contact-status" role="status" aria-live="polite"></p>
         <button type="submit" class="btn btn-primary">Send</button>
       </form>
     </div>
