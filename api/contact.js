@@ -1,8 +1,8 @@
 const { sendContactEmail } = require('../lib/email');
 
 const SUBJECTS = [
-  'Demande de démonstration', 'Conditions pour agence', 'Question technique', 'Autre',
-  'Demo request', 'Agency terms', 'Technical question', 'Other',
+  'Demande de démonstration', 'Conditions pour plusieurs sites', 'Question technique', 'Autre',
+  'Demo request', 'Terms for multiple sites', 'Technical question', 'Other',
 ];
 const MIN_FILL_MS = 3000;
 const MAX_AGE_MS = 24 * 60 * 60 * 1000;
@@ -56,7 +56,7 @@ module.exports = async function handler(req, res) {
     website: str(b.website, 200), subject: str(b.subject, 60), message: str(b.message, 2000),
   };
   const invalid =
-    data.name.length < 2 || !EMAIL_RE.test(data.email) || data.company.length < 2 ||
+    data.name.length < 2 || !EMAIL_RE.test(data.email) ||
     !URL_RE.test(data.website) || !SUBJECTS.includes(data.subject) ||
     data.message.length < 20 || b.consent !== true ||
     (data.message.match(LINK_RE) || []).length > 1;
