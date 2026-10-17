@@ -128,3 +128,29 @@ figcaption{margin-top:10px;font-size:.88rem;color:var(--text-muted);}
 .home .diff pre{overflow-x:auto;-webkit-overflow-scrolling:touch;}
 .home .chat{padding:22px;}
 @media (max-width:480px){.home .chat{padding:16px;}.home .diff{font-size:.75rem;}.home .wrap{padding:0 18px;}}
+
+/* ---- Mobile polish ---- */
+@media (max-width:720px){
+  .home nav{flex-wrap:nowrap;justify-content:space-between;padding:10px 18px;}
+  .home .nav-right{width:auto;gap:8px;}
+  .home .logo{font-size:1.45rem;}
+  .home .nav-cta{padding:7px 12px;font-size:.78rem;}
+  .home .intro{padding:44px 0 0;}
+  .home h1{font-size:clamp(2.1rem,9.5vw,2.8rem);margin-bottom:20px;}
+  .home .lead{font-size:1.05rem;margin-bottom:26px;}
+  .home .block{padding:60px 0;}
+  .home h2{font-size:1.9rem;}
+  .home h2.big{font-size:2.3rem;}
+  .home .prose{font-size:1.1rem;}
+  .home .price{font-size:4rem;}
+  .home .row{padding:22px 0;}
+  .home .row h3{font-size:1.4rem;}
+  .home .shot{margin-top:40px;}
+  .home .legal-page{padding:44px 0 64px;}
+  .home .buy-license-btn,.home .contact-form .btn{width:100%;justify-content:center;}
+  /* screenshots are unreadable shrunk to phone width: let them scroll sideways at a legible size */
+  .home .intro .wrap.wide,.home .shots figure{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .home .shot{width:auto;max-width:none;min-width:600px;margin-top:40px;}
+  .home .shots img{width:auto;max-width:none;min-width:620px;}
+  .home .shots figcaption::after{content:" →";opacity:.6;}
+}
