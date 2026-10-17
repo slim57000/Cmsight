@@ -121,3 +121,10 @@ figcaption{margin-top:10px;font-size:.88rem;color:var(--text-muted);}
 .hp{position:absolute!important;left:-9999px;width:1px;height:1px;overflow:hidden;}
 .form-status{min-height:1.3em;font-size:.88rem;color:var(--accent-2);margin:0;}
 .form-status.error{color:#f0a0a0;}
+/* Mobile: grid children must be allowed to shrink, or the diff/pre forces the page wider than the viewport */
+.home .wrap.split{grid-template-columns:minmax(0,5fr) minmax(0,6fr);}
+@media (max-width:860px){.home .wrap.split{grid-template-columns:minmax(0,1fr);}}
+.home .wrap.split > *,.home .row > *,.home .chat,.home .diff{min-width:0;max-width:100%;}
+.home .diff pre{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.home .chat{padding:22px;}
+@media (max-width:480px){.home .chat{padding:16px;}.home .diff{font-size:.75rem;}.home .wrap{padding:0 18px;}}
