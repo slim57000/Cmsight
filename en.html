@@ -12,11 +12,7 @@
   (function () {
     try {
       var pref = localStorage.getItem('cmsight_lang');
-      if (pref === 'en') { window.location.replace('en.html'); return; }
-      if (!pref) {
-        var lang = (navigator.language || navigator.userLanguage || '').toLowerCase();
-        if (lang.indexOf('fr') !== 0) { window.location.replace('en.html'); }
-      }
+      if (pref === 'fr') { window.location.replace('index.html'); return; }
     } catch (e) {}
   })();
 </script>
