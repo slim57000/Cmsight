@@ -147,7 +147,7 @@ figcaption{margin-top:10px;font-size:.88rem;color:var(--text-muted);}
   .home .row h3{font-size:1.4rem;}
   .home .shot{margin-top:40px;}
   .home .legal-page{padding:44px 0 64px;}
-  .home .buy-license-btn,.home .contact-form .btn{width:100%;justify-content:center;}
+  .home .block .buy-license-btn,.home .contact-form .btn{width:100%;justify-content:center;}
 }
 
 /* Never trap touch scrolling: no nested scroll containers around screenshots, and clip (not hide) horizontal overflow so the page itself stays the scroller on iOS */
@@ -165,3 +165,6 @@ body.home{overflow-x:clip;}
   .home .intro{padding-bottom:8px;}
   .home .shots{gap:24px;}
 }
+
+.home button.nav-cta{border:0;cursor:pointer;font-family:inherit;}
+.home .nav-cta[disabled]{opacity:.7;cursor:default;}
