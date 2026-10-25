@@ -148,9 +148,12 @@ figcaption{margin-top:10px;font-size:.88rem;color:var(--text-muted);}
   .home .shot{margin-top:40px;}
   .home .legal-page{padding:44px 0 64px;}
   .home .buy-license-btn,.home .contact-form .btn{width:100%;justify-content:center;}
-  /* screenshots are unreadable shrunk to phone width: let them scroll sideways at a legible size */
-  .home .intro .wrap.wide,.home .shots figure{overflow-x:auto;-webkit-overflow-scrolling:touch;}
-  .home .shot{width:auto;max-width:none;min-width:600px;margin-top:40px;}
-  .home .shots img{width:auto;max-width:none;min-width:620px;}
-  .home .shots figcaption::after{content:" →";opacity:.6;}
 }
+
+/* Never trap touch scrolling: no nested scroll containers around screenshots, and clip (not hide) horizontal overflow so the page itself stays the scroller on iOS */
+.home .diff pre{overflow-x:visible;white-space:pre-wrap;word-break:break-all;}
+.home .diff pre span{white-space:pre-wrap;}
+html:has(body.home){overflow-x:visible;}
+body.home{overflow-x:clip;}
+.home .shot,.home .shots img{display:block;width:100%;height:auto;}
+.home figure a,.home .wrap.wide a{display:block;}
