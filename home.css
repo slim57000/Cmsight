@@ -157,3 +157,11 @@ html:has(body.home){overflow-x:visible;}
 body.home{overflow-x:clip;}
 .home .shot,.home .shots img{display:block;width:100%;height:auto;}
 .home figure a,.home .wrap.wide a{display:block;}
+
+/* Mobile: hide the hero window shot (unreadable at 390px; the example below shows the same thing as real text) and crop the app shots to their centre */
+@media (max-width:720px){
+  .home .intro .wrap.wide{display:none;}
+  .home .shots img{aspect-ratio:4/3;object-fit:cover;object-position:50% 50%;}
+  .home .intro{padding-bottom:8px;}
+  .home .shots{gap:24px;}
+}
