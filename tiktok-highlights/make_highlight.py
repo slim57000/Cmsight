@@ -1,45 +1,78 @@
-"""Assemble clips/*.mp4 + meme + musique en vidéo TikTok 1080x1920.
-Usage: python3 make_highlight.py [musique.mp3] [--duree 8]
+"""Highlights foot TikTok : clips/*.mp4|mov + memes vidéo (memes/*.mp4) + musique.
+Effets par extrait : accélération -> ralenti à l'impact, punch zoom + shake, split RGB,
+flash blanc, vignette, texte, meme vidéo (avec son) en incrustation.
+Usage: python3 make_highlight.py [musique.mp3] [--duree 8] [--meme 2] [--texte "GOAL"]
 """
 import glob, subprocess, sys, os, tempfile
 
-args = [a for a in sys.argv[1:] if not a.startswith("--")]
-music = args[0] if args else (sorted(glob.glob("music/*.mp3") + glob.glob("music/*.m4a")) or [None])[0]
-clips = sorted(glob.glob("clips/*.mp4") + glob.glob("clips/*.mov"))
-meme = "memes/exemple_meme.png"
-SEG = float(sys.argv[sys.argv.index("--duree") + 1]) if "--duree" in sys.argv else 8
-if not clips:
-    sys.exit("Aucun clip dans clips/ — ajoute tes extraits .mp4")
+def opt(n, d):
+    return sys.argv[sys.argv.index(n) + 1] if n in sys.argv else d
+args = [a for i, a in enumerate(sys.argv[1:], 1)
+        if not a.startswith("--") and not sys.argv[i-1].startswith("--")]
+music = args[0] if args else next(iter(sorted(glob.glob("music/*.mp3") + glob.glob("music/*.m4a"))), None)
+find = lambda d: sorted(glob.glob(f"{d}/*.mp4") + glob.glob(f"{d}/*.mov"))
+clips, memes = find("clips"), find("memes")
+SEG, MD, TXT = float(opt("--duree", 8)), float(opt("--meme", 2)), opt("--texte", "GOAL")
+if not clips: sys.exit("Aucun clip dans clips/ — ajoute tes extraits (.mp4/.mov)")
+FONT = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+
+def run(cmd): subprocess.run(["ffmpeg", "-y", "-v", "error"] + cmd, check=True)
+
+T, SLOW, SP = SEG / 2, 0.8, 2.8          # impact, durée source ralentie, facteur de ralenti
+TS = T + SLOW * SP                       # fin du ralenti (temps de sortie)
+DUR = SEG - SLOW + SLOW * SP
+f0, f1 = int(T * 30), int(TS * 30)
+
+def video_chain():
+    return (f"scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,setsar=1,fps=30,"
+            f"split=3[a][b][c];"
+            f"[a]trim=0:{T},setpts=PTS-STARTPTS[a1];"
+            f"[b]trim={T}:{T+SLOW},setpts=(PTS-STARTPTS)*{SP}[b1];"
+            f"[c]trim={T+SLOW}:{SEG},setpts=PTS-STARTPTS[c1];"
+            f"[a1][b1][c1]concat=n=3:v=1:a=0,"
+            f"zoompan=z='if(between(on,{f0},{f1}),1+0.35*(on-{f0})/{f1-f0},1.04)':"
+            f"x='iw/2-iw/zoom/2+if(between(on,{f0},{f1}),sin(on*2.7)*14,0)':"
+            f"y='ih/2-ih/zoom/2+if(between(on,{f0},{f1}),cos(on*3.1)*14,0)':d=1:s=1080x1920:fps=30,"
+            f"rgbashift=rh=10:bh=-10:enable='between(t,{T},{TS})',"
+            f"eq=contrast=1.12:saturation=1.3,vignette=PI/4,"
+            f"drawbox=x=0:y=0:w=iw:h=ih:color=white@0.85:t=fill:enable='between(t,{TS},{TS+0.12})',"
+            f"drawtext=fontfile={FONT}:text='{TXT}':fontsize=190:fontcolor=white:borderw=12:bordercolor=black:"
+            f"x=(w-tw)/2:y=330+sin(t*20)*8:enable='between(t,{T},{TS+0.8})'")
 
 tmp = tempfile.mkdtemp()
 parts = []
 for i, c in enumerate(clips):
     out = f"{tmp}/p{i}.mp4"
-    # 9:16 recadré + léger zoom punch + flash blanc à l'impact (milieu du clip)
-    vf = ("scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,"
-          f"zoompan=z='if(between(on,{int(SEG*15)},{int(SEG*15)+8}),1.15,1)':d=1:s=1080x1920:fps=30,"
-          f"fade=t=in:st={SEG/2}:d=0.1:color=white,fade=t=out:st={SEG/2+0.1}:d=0.15:color=white")
-    subprocess.run(["ffmpeg","-y","-v","error","-t",str(SEG),"-i",c,"-an","-vf",vf,
-                    "-r","30","-pix_fmt","yuv420p",out], check=True)
+    enc = ["-t", f"{DUR}", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac", "-ar", "44100", out]
+    sil = ["-f", "lavfi", "-t", f"{DUR}", "-i", "anullsrc=r=44100:cl=stereo"]
+    vc = video_chain()
+    if memes:
+        m = memes[i % len(memes)]
+        fc = (f"[0:v]{vc}[b];[1:v]scale=760:-2,setpts=PTS-STARTPTS+{TS}/TB[mv];"
+              f"[b][mv]overlay=(W-w)/2:H-h-260:enable='between(t,{TS},{TS+MD})':eof_action=pass[v]")
+        try:   # avec le son du meme
+            run(["-t", f"{SEG}", "-i", c, "-t", f"{MD}", "-i", m, "-filter_complex",
+                 fc + f";[1:a]atrim=0:{MD},asetpts=PTS-STARTPTS,adelay={int(TS*1000)}|{int(TS*1000)},apad=whole_dur={DUR}[a]",
+                 "-map", "[v]", "-map", "[a]"] + enc)
+        except subprocess.CalledProcessError:  # meme sans audio
+            run(["-t", f"{SEG}", "-i", c, "-t", f"{MD}", "-i", m] + sil +
+                ["-filter_complex", fc, "-map", "[v]", "-map", "2:a"] + enc)
+    else:
+        run(["-t", f"{SEG}", "-i", c] + sil + ["-filter_complex", f"[0:v]{vc}[v]", "-map", "[v]", "-map", "1:a"] + enc)
     parts.append(out)
 
 lst = f"{tmp}/list.txt"
 open(lst, "w").write("".join(f"file '{p}'\n" for p in parts))
 joined = f"{tmp}/joined.mp4"
-subprocess.run(["ffmpeg","-y","-v","error","-f","concat","-safe","0","-i",lst,"-c","copy",joined], check=True)
+run(["-f", "concat", "-safe", "0", "-i", lst, "-c", "copy", joined])
 
-cmd = ["ffmpeg","-y","-v","error","-i",joined]
-fc = "[0:v]null[v]"
-if os.path.exists(meme):  # meme en bandeau sur les 2 premières secondes
-    cmd += ["-i", meme]
-    fc = "[1:v]scale=1080:-1[m];[0:v][m]overlay=0:0:enable='lt(t,2)'[v]"
+os.makedirs("output", exist_ok=True)
+final = "output/highlight_tiktok.mp4"
 if music:
-    cmd += ["-i", music]
-    ai = 2 if os.path.exists(meme) else 1
-    cmd += ["-filter_complex", fc, "-map","[v]","-map",f"{ai}:a",
-            "-af","afade=t=out:st=%f:d=1" % (SEG*len(clips)-1), "-shortest"]
+    tot = DUR * len(clips)
+    run(["-i", joined, "-stream_loop", "-1", "-i", music, "-filter_complex",
+         f"[1:a]volume=0.6,afade=t=out:st={tot-1}:d=1[m];[0:a][m]amix=inputs=2:duration=first:normalize=0[a]",
+         "-map", "0:v", "-map", "[a]", "-c:v", "copy", "-c:a", "aac", "-shortest", final])
 else:
-    cmd += ["-filter_complex", fc, "-map","[v]"]
-cmd += ["-c:v","libx264","-preset","fast","-crf","20","-c:a","aac","output/highlight_tiktok.mp4"]
-subprocess.run(cmd, check=True)
-print("→ output/highlight_tiktok.mp4")
+    run(["-i", joined, "-c", "copy", final])
+print("→", final)
