@@ -12,6 +12,8 @@ args = [a for i, a in enumerate(sys.argv[1:], 1)
 music = args[0] if args else next(iter(sorted(glob.glob("music/*.mp3") + glob.glob("music/*.m4a"))), None)
 find = lambda d: sorted(glob.glob(f"{d}/*.mp4") + glob.glob(f"{d}/*.mov"))
 clips, memes = find("clips"), find("memes")
+INTRO = opt("--intro", None)          # vidéo d'ouverture (ex. memes/malcolm.mov), jouée en entier au début
+memes = [m for m in memes if m != INTRO]
 MD = float(opt("--meme", 2))
 TEXTES = opt("--texte", "ILS ONT PAS COMPRIS,LE GARDIEN : 404,SALE,CA SENT LE BUT,RESPECT").split(",")
 if not clips: sys.exit("Aucun clip dans clips/ — ajoute tes extraits (.mp4/.mov)")
@@ -82,6 +84,14 @@ for i, c in enumerate(clips):
     else:
         run(["-t", f"{SEG}", "-i", c] + sil + ["-filter_complex", f"[0:v]{vc}[v]", "-map", "[v]", "-map", "1:a"] + enc)
     parts.append(out)
+
+if INTRO:
+    out = f"{tmp}/intro.mp4"
+    run(["-i", INTRO, "-filter_complex",
+         "[0:v]split[a][b];[a]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,boxblur=30:5[bg];"
+         "[b]scale=1080:1920:force_original_aspect_ratio=decrease[fg];[bg][fg]overlay=(W-w)/2:(H-h)/2,setsar=1,fps=30[v]",
+         "-map", "[v]", "-map", "0:a?", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac", "-ar", "44100", "-ac", "2", out])
+    parts.insert(0, out)
 
 lst = f"{tmp}/list.txt"
 open(lst, "w").write("".join(f"file '{p}'\n" for p in parts))
