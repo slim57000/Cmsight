@@ -12,19 +12,37 @@ args = [a for i, a in enumerate(sys.argv[1:], 1)
 music = args[0] if args else next(iter(sorted(glob.glob("music/*.mp3") + glob.glob("music/*.m4a"))), None)
 find = lambda d: sorted(glob.glob(f"{d}/*.mp4") + glob.glob(f"{d}/*.mov"))
 clips, memes = find("clips"), find("memes")
-SEG, MD, TXT = float(opt("--duree", 8)), float(opt("--meme", 2)), opt("--texte", "GOAL")
+MD, TXT = float(opt("--meme", 2)), opt("--texte", "INSANE")
 if not clips: sys.exit("Aucun clip dans clips/ — ajoute tes extraits (.mp4/.mov)")
 FONT = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
 
 def run(cmd): subprocess.run(["ffmpeg", "-y", "-v", "error"] + cmd, check=True)
 
-T, SLOW, SP = SEG / 2, 0.8, 2.8          # impact, durée source ralentie, facteur de ralenti
-TS = T + SLOW * SP                       # fin du ralenti (temps de sortie)
-DUR = SEG - SLOW + SLOW * SP
-f0, f1 = int(T * 30), int(TS * 30)
+SLOW, SP = 0.8, 2.8                      # durée source ralentie, facteur de ralenti
+import array, json
 
-def video_chain():
-    return (f"scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,setsar=1,fps=30,"
+def probe_dur(c):
+    r = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "json", c],
+                       capture_output=True, text=True, check=True)
+    return float(json.loads(r.stdout)["format"]["duration"])
+
+def impact_time(c, seg):
+    """Instant le plus bruyant (foule) -> impact ; milieu si pas d'audio."""
+    p = subprocess.run(["ffmpeg", "-v", "error", "-t", str(seg), "-i", c, "-vn", "-ac", "1", "-ar", "8000",
+                        "-f", "s16le", "-"], capture_output=True)
+    a = array.array("h"); a.frombytes(p.stdout[:len(p.stdout)//2*2])
+    w = 4000  # fenêtres de 0.5 s
+    if len(a) < 4 * w: return seg / 2
+    e = [sum(abs(x) for x in a[i:i+w]) for i in range(0, len(a) - w, w // 2)]
+    t = e.index(max(e)) * 0.25
+    return min(max(t, 1.5), seg - SLOW - 1.5)
+
+def video_chain(T, TS, SEG):
+    f0, f1 = int(T * 30), int(TS * 30)
+    return (f"split[bg0][fg0];"
+            f"[bg0]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,boxblur=30:5,eq=brightness=-0.15[bg];"
+            f"[fg0]scale=-2:1400,crop=1080:1400[fg];"
+            f"[bg][fg]overlay=(W-w)/2:(H-h)/2,setsar=1,fps=30,"
             f"split=3[a][b][c];"
             f"[a]trim=0:{T},setpts=PTS-STARTPTS[a1];"
             f"[b]trim={T}:{T+SLOW},setpts=(PTS-STARTPTS)*{SP}[b1];"
@@ -43,9 +61,12 @@ tmp = tempfile.mkdtemp()
 parts = []
 for i, c in enumerate(clips):
     out = f"{tmp}/p{i}.mp4"
+    SEG = min(probe_dur(c), float(opt("--duree", 10)))
+    T = impact_time(c, SEG); TS = T + SLOW * SP; DUR = SEG - SLOW + SLOW * SP
+    print(f"{os.path.basename(c)}: impact à {T:.1f}s")
     enc = ["-t", f"{DUR}", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac", "-ar", "44100", out]
     sil = ["-f", "lavfi", "-t", f"{DUR}", "-i", "anullsrc=r=44100:cl=stereo"]
-    vc = video_chain()
+    vc = video_chain(T, TS, SEG)
     if memes:
         m = memes[i % len(memes)]
         fc = (f"[0:v]{vc}[b];[1:v]scale=760:-2,setpts=PTS-STARTPTS+{TS}/TB[mv];"
@@ -69,7 +90,7 @@ run(["-f", "concat", "-safe", "0", "-i", lst, "-c", "copy", joined])
 os.makedirs("output", exist_ok=True)
 final = "output/highlight_tiktok.mp4"
 if music:
-    tot = DUR * len(clips)
+    tot = sum(float(subprocess.run(["ffprobe","-v","error","-show_entries","format=duration","-of","csv=p=0",p],capture_output=True,text=True).stdout) for p in parts)
     run(["-i", joined, "-stream_loop", "-1", "-i", music, "-filter_complex",
          f"[1:a]volume=0.6,afade=t=out:st={tot-1}:d=1[m];[0:a][m]amix=inputs=2:duration=first:normalize=0[a]",
          "-map", "0:v", "-map", "[a]", "-c:v", "copy", "-c:a", "aac", "-shortest", final])
