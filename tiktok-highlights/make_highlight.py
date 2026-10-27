@@ -12,7 +12,8 @@ args = [a for i, a in enumerate(sys.argv[1:], 1)
 music = args[0] if args else next(iter(sorted(glob.glob("music/*.mp3") + glob.glob("music/*.m4a"))), None)
 find = lambda d: sorted(glob.glob(f"{d}/*.mp4") + glob.glob(f"{d}/*.mov"))
 clips, memes = find("clips"), find("memes")
-MD, TXT = float(opt("--meme", 2)), opt("--texte", "INSANE")
+MD = float(opt("--meme", 2))
+TEXTES = opt("--texte", "ILS ONT PAS COMPRIS,LE GARDIEN : 404,SALE,CA SENT LE BUT,RESPECT").split(",")
 if not clips: sys.exit("Aucun clip dans clips/ — ajoute tes extraits (.mp4/.mov)")
 FONT = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
 
@@ -37,7 +38,7 @@ def impact_time(c, seg):
     t = e.index(max(e)) * 0.25
     return min(max(t, 1.5), seg - SLOW - 1.5)
 
-def video_chain(T, TS, SEG):
+def video_chain(T, TS, SEG, TXT):
     f0, f1 = int(T * 30), int(TS * 30)
     return (f"split[bg0][fg0];"
             f"[bg0]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,boxblur=30:5,eq=brightness=-0.15[bg];"
@@ -54,7 +55,7 @@ def video_chain(T, TS, SEG):
             f"rgbashift=rh=10:bh=-10:enable='between(t,{T},{TS})',"
             f"eq=contrast=1.12:saturation=1.3,vignette=PI/4,"
             f"drawbox=x=0:y=0:w=iw:h=ih:color=white@0.85:t=fill:enable='between(t,{TS},{TS+0.12})',"
-            f"drawtext=fontfile={FONT}:text='{TXT}':fontsize=190:fontcolor=white:borderw=12:bordercolor=black:"
+            f"drawtext=fontfile={FONT}:text='{TXT}':fontsize=110:fontcolor=white:borderw=12:bordercolor=black:"
             f"x=(w-tw)/2:y=330+sin(t*20)*8:enable='between(t,{T},{TS+0.8})'")
 
 tmp = tempfile.mkdtemp()
@@ -66,7 +67,7 @@ for i, c in enumerate(clips):
     print(f"{os.path.basename(c)}: impact à {T:.1f}s")
     enc = ["-t", f"{DUR}", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac", "-ar", "44100", out]
     sil = ["-f", "lavfi", "-t", f"{DUR}", "-i", "anullsrc=r=44100:cl=stereo"]
-    vc = video_chain(T, TS, SEG)
+    vc = video_chain(T, TS, SEG, TEXTES[i % len(TEXTES)])
     if memes:
         m = memes[i % len(memes)]
         fc = (f"[0:v]{vc}[b];[1:v]scale=760:-2,setpts=PTS-STARTPTS+{TS}/TB[mv];"
