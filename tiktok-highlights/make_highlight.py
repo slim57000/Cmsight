@@ -35,10 +35,19 @@ def impact_time(c, seg):
                         "-f", "s16le", "-"], capture_output=True)
     a = array.array("h"); a.frombytes(p.stdout[:len(p.stdout)//2*2])
     w = 4000  # fenêtres de 0.5 s
-    if len(a) < 4 * w: return seg / 2
+    if len(a) < 4 * w: return seg / 2, 0
     e = [sum(abs(x) for x in a[i:i+w]) for i in range(0, len(a) - w, w // 2)]
     t = e.index(max(e)) * 0.25
-    return min(max(t, 1.5), seg - SLOW - 1.5)
+    return min(max(t, 1.5), seg - SLOW - 1.5), max(e)
+
+def song_drop(f, horizon=120):
+    """Plus gros saut d'énergie de la musique = le drop (secondes)."""
+    p = subprocess.run(["ffmpeg", "-v", "error", "-t", str(horizon), "-i", f, "-ac", "1", "-ar", "8000",
+                        "-f", "s16le", "-"], capture_output=True)
+    a = array.array("h"); a.frombytes(p.stdout[:len(p.stdout)//2*2])
+    e = [sum(abs(x) for x in a[i:i+2000]) for i in range(0, len(a) - 2000, 2000)]
+    k = 8
+    return max(range(k, len(e) - k), key=lambda i: sum(e[i:i+k]) - sum(e[i-k:i])) * 0.25
 
 def video_chain(T, TS, SEG, TXT):
     f0, f1 = int(T * 30), int(TS * 30)
@@ -61,11 +70,14 @@ def video_chain(T, TS, SEG, TXT):
             f"x=(w-tw)/2:y=330+sin(t*20)*8:enable='between(t,{T},{TS+0.8})'")
 
 tmp = tempfile.mkdtemp()
+# le clip avec le plus gros pic sonore (meilleure action) passe en premier : c'est lui qui porte le drop
+info = {c: impact_time(c, min(probe_dur(c), float(opt("--duree", 10)))) for c in clips}
+clips.sort(key=lambda c: -info[c][1])
 parts = []
 for i, c in enumerate(clips):
     out = f"{tmp}/p{i}.mp4"
     SEG = min(probe_dur(c), float(opt("--duree", 10)))
-    T = impact_time(c, SEG); TS = T + SLOW * SP; DUR = SEG - SLOW + SLOW * SP
+    T = info[c][0]; TS = T + SLOW * SP; DUR = SEG - SLOW + SLOW * SP
     print(f"{os.path.basename(c)}: impact à {T:.1f}s")
     enc = ["-t", f"{DUR}", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac", "-ar", "44100", out]
     sil = ["-f", "lavfi", "-t", f"{DUR}", "-i", "anullsrc=r=44100:cl=stereo"]
@@ -101,9 +113,16 @@ run(["-f", "concat", "-safe", "0", "-i", lst, "-c", "copy", joined])
 os.makedirs("output", exist_ok=True)
 final = "output/highlight_tiktok.mp4"
 if music:
-    tot = sum(float(subprocess.run(["ffprobe","-v","error","-show_entries","format=duration","-of","csv=p=0",p],capture_output=True,text=True).stdout) for p in parts)
-    run(["-i", joined, "-stream_loop", "-1", "-i", music, "-filter_complex",
-         f"[1:a]volume=0.6,afade=t=out:st={tot-1}:d=1[m];[0:a][m]amix=inputs=2:duration=first:normalize=0[a]",
+    dur = lambda p: float(subprocess.run(["ffprobe","-v","error","-show_entries","format=duration","-of","csv=p=0",p],capture_output=True,text=True).stdout)
+    tot = sum(dur(p) for p in parts)
+    first = (dur(parts[0]) if INTRO else 0) + info[clips[0]][0]   # début du ralenti du meilleur clip
+    drop = float(opt("--drop", song_drop(music)))
+    shift = drop - first                                          # >0 : on saute le début du son
+    print(f"drop musique à {drop:.1f}s -> calé sur l'action à {first:.1f}s")
+    pre = ["-ss", f"{shift}"] if shift > 0 else []
+    delay = f",adelay={int(-shift*1000)}|{int(-shift*1000)}" if shift < 0 else ""
+    run(["-i", joined] + pre + ["-stream_loop", "-1", "-i", music, "-filter_complex",
+         f"[1:a]volume=0.6{delay},afade=t=out:st={tot-1}:d=1[m];[0:a][m]amix=inputs=2:duration=first:normalize=0[a]",
          "-map", "0:v", "-map", "[a]", "-c:v", "copy", "-c:a", "aac", "-shortest", final])
 else:
     run(["-i", joined, "-c", "copy", final])
