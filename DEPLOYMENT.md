@@ -92,15 +92,12 @@ production domain ever changes, otherwise the hardcoded fallback works.
 are actually hosted somewhere. Until then, `account.html` tells buyers
 the download will be available soon instead of showing a broken link.
 
-`LAUNCH_OFFER_END_DATE` drives both the pricing-badge countdown on
-`index.html`/`en.html` (via `GET /api/config`, public/no secrets) and the
-actual price switch in `/api/checkout`. Set to 15 days from now
-(`2026-10-05`) — checked live on each request, no cron needed. Past that
-date, Cmsight checkout only switches to `STRIPE_PRICE_ID_CMSIGHT_REGULAR`
-once you've created that price in Stripe and set the env var; until then
-it keeps using the launch price, so nothing breaks if the new price isn't
-ready yet. Leaving `LAUNCH_OFFER_END_DATE` unset means the offer never
-ends.
+The launch offer is over. `/api/checkout` always charges the price in
+`STRIPE_PRICE_ID_CMSIGHT`: to change the Cmsight price, create a new price in
+Stripe, set `STRIPE_PRICE_ID_CMSIGHT` to its `price_...` id in Vercel and
+redeploy. `LAUNCH_OFFER_END_DATE` and `STRIPE_PRICE_ID_CMSIGHT_REGULAR` no
+longer affect checkout (the webhook still recognises the latter for sessions
+created before a price change), so they can be removed.
 
 `ADMIN_API_KEY` gates `/admin.html` and the two admin comment routes.
 Generate a long random value yourself (e.g. `openssl rand -hex 32`) —
